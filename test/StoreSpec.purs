@@ -6,7 +6,6 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Unsafe (unsafePerformEffect)
 import Halogen.Helix.Store (dispatch, emitState, getState, mkHelixStore)
-import Halogen.Subscription (Subscription)
 import Halogen.Subscription as HS
 import Test.Spec (SpecT, describe, it)
 import Test.Spec.Assertions (shouldEqual)
