@@ -53,3 +53,16 @@ conuter = Hooks.component \_ _ -> Hooks.do
         ]
       ]
 ```
+
+# Run example app
+
+In the project root,
+
+```sh
+npm i
+npm run example
+```
+
+Open your favorite browser and go to http://localhost:5173.
+
+# Differences to [halogen-store]()
