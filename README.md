@@ -65,7 +65,7 @@ As with other hooks, the `state` is pure value and intended only to be used in t
 The context object contains two functions:
 
 - `getState :: HookM m state` ... returns the current value of the (selected part of the) state.
-- `dispatch :: action -> HookM m Unit` ... accepts the `Action` value and dispatches it to the Helix store manager.
+- `dispatch :: action -> HookM m Unit` ... accepts the `Action` value and dispatches it to the Helix store manager. Behind the scene, the Helix store manager calculates the next state value using the dispatched action and reducer, updates the state with that value.
 
 Here is our completed example:
 

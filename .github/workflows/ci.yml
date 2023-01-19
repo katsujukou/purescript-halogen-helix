@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: purescript-contrib/setup-purescript@main
+        with:
+          purs-tidy: "latest"
+
+      - name: Install npm packages
+        run: npm install
+
+      - name: Build source
+        run: npm run build
+
+      - name: Build example
+        run: npm run example:build
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Verify formatting
+        run: purs-tidy check src test example
