@@ -1,0 +1,25 @@
+{
+  "name": "purescript-halogen-helix",
+  "description": "Lightweight global state management for PureScript Halogen using halogen-hooks.",
+  "version": "1.0.0",
+  "author": {
+    "email": "katsujukou@gmail.com",
+    "name": "Katsujukou Kineya"
+  },
+  "license": "MIT",
+  "keywords": [
+    "purescript",
+    "halogen",
+    "store",
+    "state management",
+    "global state"
+  ],
+  "scripts": {
+    "example": "cd example && spago build && vite serve"
+  },
+  "deependencies": {},
+  "devDependencies": {
+    "uuid": "^9.0.0",
+    "vite": "^4.0.4"
+  }
+}

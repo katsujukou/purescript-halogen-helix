@@ -1,0 +1,29 @@
+.todo-item {
+  cursor: pointer;
+  padding: 8px;
+  margin-bottom: 4px;
+  border-radius: 0.5em;
+  background-color: #6a70b7;
+  color: #fffaf0;
+}
+.todo-item.done {
+  text-decoration: line-through;
+  color: #5e5e5e;
+  background-color: #c9cade;
+  cursor: initial;
+}
+
+.add-todo-form {
+  margin-bottom: 16px;
+}
+.add-todo-form-input {
+  width: calc(100% - 72px);
+  padding: 8px 4px 8px;
+}
+
+.add-todo-form-button {
+  padding: 8px 16px;
+  background-color: #415ea9;
+  border-radius: 4px;
+  color: #eaeaea;
+}
