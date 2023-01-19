@@ -15,7 +15,8 @@
     "global state"
   ],
   "scripts": {
-    "example": "cd example && spago build && vite serve"
+    "example": "cd example && spago build && vite serve",
+    "test": "spago test"
   },
   "deependencies": {},
   "devDependencies": {
