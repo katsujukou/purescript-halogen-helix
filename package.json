@@ -1,6 +1,6 @@
 {
   "name": "purescript-halogen-helix",
-  "description": "Lightweight global state management for PureScript Halogen using halogen-hooks.",
+  "description": "Lightweight global state management for PureScript Halogen.",
   "version": "1.0.0",
   "author": {
     "email": "katsujukou@gmail.com",

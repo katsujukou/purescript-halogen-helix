@@ -1,6 +1,6 @@
 # PureScript Halogen Helix
 
-Lightweight global state management for PureScript Halogen using halogen-hooks.
+Lightweight global state management for PureScript Halogen.
 
 ## Quick Start
 
@@ -54,7 +54,7 @@ conuter = Hooks.component \_ _ -> Hooks.do
       ]
 ```
 
-# Run example app
+## Run example app
 
 In the project root,
 
@@ -65,4 +65,4 @@ npm run example
 
 Open your favorite browser and go to http://localhost:5173.
 
-# Differences to [halogen-store]()
+## Differences to [halogen-store](https://github.com/thomashoneyman/purescript-halogen-store)
