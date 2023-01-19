@@ -11,3 +11,4 @@
 output/
 output-es/
 .DS_Store
+/example/dist
