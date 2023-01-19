@@ -1,6 +1,7 @@
 # PureScript Halogen Helix
-
 Lightweight global state management for PureScript Halogen.
+
+[![CI](https://github.com/katsujukou/purescript-halogen-helix/actions/workflows/ci.yml/badge.svg)](https://github.com/katsujukou/purescript-halogen-helix/actions/workflows/ci.yml)
 
 ## What is this?
 
