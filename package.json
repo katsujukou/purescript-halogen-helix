@@ -18,7 +18,8 @@
     "build": "spago build",
     "test": "spago test",
     "example": "cd example && spago build && vite serve",
-    "example:build": "cd example && spago build"
+    "example:build": "cd example && spago build && vite build",
+    "check": "purs-tidy check src test example/src"
   },
   "deependencies": {},
   "devDependencies": {
