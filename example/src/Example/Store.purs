@@ -3,18 +3,46 @@ module Example.Store where
 import Prelude
 
 import Data.Array (findIndex, modifyAt, snoc)
+import Data.Generic.Rep (class Generic)
 import Data.Maybe (fromMaybe)
+import Data.Show.Generic (genericShow)
 import Data.UUID as UUID
-import Effect.Class (class MonadEffect)
+import Effect.Class (class MonadEffect, liftEffect)
+import Effect.Class.Console as Console
 import Effect.Unsafe (unsafePerformEffect)
 import Example.Types (TodoItem)
-import Halogen.Helix (UseHelixHook, makeStore)
+import Halogen.Helix (HelixMiddleware, UseHelixHook, makeStoreMiddleware, (<|))
 
 type State = Array TodoItem
 
 data Action
-  = AddTodoItem UUID.UUID String
+  = CreateTodoItem UUID.UUID String
+  | AddTodo String
   | MarkDone UUID.UUID
+
+derive instance Generic Action _
+instance Show Action where
+  show = genericShow
+
+middlewares :: forall m. MonadEffect m => HelixMiddleware State Action m
+middlewares = actionLogger <| stateLogger <| idProvider
+  where
+  stateLogger ctx action next = do
+    before <- ctx.getState
+    Console.log $ "Before: " <> show before
+    next action
+    after <- ctx.getState
+    Console.log $ "After: " <> show after
+
+  actionLogger _ action next = do
+    Console.log $ "Dispatched: " <> show action
+    next action
+
+  idProvider ctx action next = case action of
+    AddTodo item -> do
+      id <- liftEffect UUID.genUUID
+      ctx.dispatch $ CreateTodoItem id item
+    _ -> next action
 
 initialState :: State
 initialState = unsafePerformEffect do
@@ -24,11 +52,12 @@ initialState = unsafePerformEffect do
   pure [ item1, item2, item3 ]
 
 useTodos :: forall ctx m. MonadEffect m => Eq ctx => UseHelixHook State Action ctx m
-useTodos = makeStore "todos" reducer initialState
+useTodos = makeStoreMiddleware "todos" reducer initialState middlewares
   where
   reducer st act = case act of
-    AddTodoItem id title -> snoc st { id, title, done: false }
+    CreateTodoItem id title -> snoc st { id, title, done: false }
     MarkDone id -> fromMaybe st
       $ (\idx -> modifyAt idx (_ { done = true }) st)
           <=< findIndex ((_ == id) <<< _.id)
       $ st
+    _ -> st

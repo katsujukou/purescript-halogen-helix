@@ -3,8 +3,7 @@ module Example.App where
 import Prelude
 
 import Data.Tuple.Nested ((/\))
-import Data.UUID as UUID
-import Effect.Class (class MonadEffect, liftEffect)
+import Effect.Class (class MonadEffect)
 import Example.Store (Action(..), useTodos)
 import Halogen (ClassName(..))
 import Halogen as H
@@ -57,9 +56,8 @@ addTodoItemForm = Hooks.component \_ _ -> Hooks.do
 
   let
     handleClick = do
-      id <- liftEffect UUID.genUUID
       title <- Hooks.get textId
-      ctx.dispatch (AddTodoItem id title)
+      ctx.dispatch $ AddTodo title
       Hooks.put textId ""
 
   Hooks.pure do
