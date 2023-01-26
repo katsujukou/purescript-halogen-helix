@@ -16,7 +16,7 @@ import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Effect.Uncurried (EffectFn2, runEffectFn2)
 import Effect.Unsafe (unsafePerformEffect)
-import Halogen.Helix.Middleware (HelixMiddleware)
+import Halogen.Helix.Types (HelixMiddleware)
 import Halogen.Subscription as HS
 
 newtype HelixStore s a m = HelixStore

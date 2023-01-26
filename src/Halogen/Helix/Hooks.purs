@@ -1,9 +1,9 @@
 module Halogen.Helix.Hooks
-  ( HelixContext
-  , UseHelix
+  ( UseHelix
   , UseHelixHook
   , makeStore
-  , makeStoreMiddleware
+  , makeStore'
+  , module Halogen.Helix.Types
   ) where
 
 import Prelude
@@ -13,9 +13,9 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect)
 import Effect.Unsafe (unsafePerformEffect)
-import Halogen.Helix.Middleware (HelixMiddleware)
 import Halogen.Helix.Store (HelixStore, mkHelixStore)
 import Halogen.Helix.Store as Store
+import Halogen.Helix.Types (HelixMiddleware', HelixContext')
 import Halogen.Hooks (class HookNewtype, type (<>), UseEffect, UseState, useLifecycleEffect, useState)
 import Halogen.Hooks as Hooks
 
@@ -25,27 +25,7 @@ type UseHelix' state = UseState state <> UseEffect <> Hooks.Pure
 
 instance HookNewtype (UseHelix s) (UseHelix' s)
 
-type HelixContext state action m =
-  { dispatch :: action -> Hooks.HookM m Unit
-  , getState :: Hooks.HookM m state
-  }
-
-type UseHelixHook state action part m = (state -> part) -> Hooks.Hook m (UseHelix state) (part /\ HelixContext part action m)
-
-type HelixMiddleware' s a m = HelixMiddleware s a (Hooks.HookM m)
-
-makeStoreMiddleware
-  :: forall state action part m
-   . MonadEffect m
-  => Eq part
-  => String
-  -> (state -> action -> state)
-  -> state
-  -> HelixMiddleware' state action m
-  -> UseHelixHook state action part m
-makeStoreMiddleware id reducer initialState middleware = unsafePerformEffect do
-  store <- mkHelixStore id initialState reducer (Just middleware)
-  pure $ Hooks.wrap <<< mkHook store initialState
+type UseHelixHook state action part m = (state -> part) -> Hooks.Hook m (UseHelix state) (part /\ HelixContext' part action m)
 
 makeStore
   :: forall state action part m
@@ -54,10 +34,21 @@ makeStore
   => String
   -> (state -> action -> state)
   -> state
+  -> HelixMiddleware' state action m
   -> UseHelixHook state action part m
-makeStore id reducer initialState = unsafePerformEffect do
-  store <- mkHelixStore id initialState reducer Nothing
+makeStore id reducer initialState middleware = unsafePerformEffect do
+  store <- mkHelixStore id initialState reducer (Just middleware)
   pure $ Hooks.wrap <<< mkHook store initialState
+
+makeStore'
+  :: forall state action part m
+   . MonadEffect m
+  => Eq part
+  => String
+  -> (state -> action -> state)
+  -> state
+  -> UseHelixHook state action part m
+makeStore' id reducer initialState = makeStore id reducer initialState (\_ act next -> next act)
 
 mkHook
   :: forall m state action part
@@ -66,7 +57,7 @@ mkHook
   => (HelixStore state action (Hooks.HookM m))
   -> state
   -> (state -> part)
-  -> Hooks.Hook m (UseHelix' state) (part /\ (HelixContext part action m))
+  -> Hooks.Hook m (UseHelix' state) (part /\ (HelixContext' part action m))
 mkHook store initialState selector = Hooks.do
   state /\ stateId <- useState initialState
 
