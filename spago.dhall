@@ -1,4 +1,6 @@
 { name = "halogen-helix"
+, license = "MIT"
+, repository = "https://github.com/katsujukou/purescript-halogen-helix"
 , dependencies =
   [ "effect"
   , "halogen-hooks"
