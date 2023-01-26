@@ -23,9 +23,9 @@ jobs:
           path: |
             .spago
             output
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
-          node-version: "18.x"
+          node-version: "18"
 
       - name: Cache node modules
         uses: actions/cache@v2
