@@ -11,31 +11,24 @@ import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console as Console
 import Effect.Unsafe (unsafePerformEffect)
 import Example.Types (TodoItem)
-import Halogen.Helix (HelixMiddleware, UseHelixHook, makeStoreMiddleware, (<|))
+import Halogen.Helix (HelixMiddleware, UseHelixHook, makeStore, (<|))
 
 type State = Array TodoItem
 
 data Action
-  = CreateTodoItem UUID.UUID String
-  | AddTodo String
+  = AddTodo String
   | MarkDone UUID.UUID
+  | CreateTodoItem UUID.UUID String
 
 derive instance Generic Action _
 instance Show Action where
   show = genericShow
 
 middlewares :: forall m. MonadEffect m => HelixMiddleware State Action m
-middlewares = actionLogger <| stateLogger <| idProvider
+middlewares = actionLogger <| idProvider
   where
-  stateLogger ctx action next = do
-    before <- ctx.getState
-    Console.log $ "Before: " <> show before
-    next action
-    after <- ctx.getState
-    Console.log $ "After: " <> show after
-
   actionLogger _ action next = do
-    Console.log $ "Dispatched: " <> show action
+    Console.log $ "Action dispatched: " <> show action
     next action
 
   idProvider ctx action next = case action of
@@ -52,7 +45,7 @@ initialState = unsafePerformEffect do
   pure [ item1, item2, item3 ]
 
 useTodos :: forall ctx m. MonadEffect m => Eq ctx => UseHelixHook State Action ctx m
-useTodos = makeStoreMiddleware "todos" reducer initialState middlewares
+useTodos = makeStore "todos" reducer initialState middlewares
   where
   reducer st act = case act of
     CreateTodoItem id title -> snoc st { id, title, done: false }
