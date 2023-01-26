@@ -16,13 +16,16 @@
   ],
   "scripts": {
     "build": "spago build",
-    "test": "spago test",
+    "test": "npm run test:unit && npm run test:E2E",
+    "test:unit": "spago -x spago.test.dhall test -m Test.Unit.Main",
+    "test:E2E": "spago -x spago.test.dhall test -m Test.E2E.Main",
     "example": "cd example && spago build && vite serve",
     "example:build": "cd example && spago build && vite build",
     "check": "purs-tidy check src test example/src"
   },
   "deependencies": {},
   "devDependencies": {
+    "happy-dom": "^8.1.5",
     "uuid": "^9.0.0",
     "vite": "^4.0.4"
   }
