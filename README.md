@@ -1,4 +1,5 @@
 # PureScript Halogen Helix
+
 Lightweight global state management for PureScript Halogen.
 
 [![CI](https://github.com/katsujukou/purescript-halogen-helix/actions/workflows/ci.yml/badge.svg)](https://github.com/katsujukou/purescript-halogen-helix/actions/workflows/ci.yml)
@@ -9,13 +10,14 @@ Lightweight global state management for PureScript Halogen.
 
 At the time of writing, there already exists a great library sharing the same purpose: [halogen-store](https://github.com/thomashoneyman/purescript-halogen-store), but this library differs in several points:
 
-- This library only supports hook style components
+- This library only supports hook style components.
 - Instead of having a single large store, you can define small stores as many as you want.
+- You can extend store functionality via middlewares.
 - No typeclass, no transformers
 
 ## Quick Start
 
-You start by defining a store. As with [halogen-store](https://github.com/thomashoneyman/purescript-halogen-store) or other similar libraries, a Helix store consist of three parts: _State, Action, and Reducer_.
+We start by defining a store. As with [halogen-store](https://github.com/thomashoneyman/purescript-halogen-store) or other similar libraries, a Helix store consist of three parts: _State, Action, and Reducer_.
 
 ```purs
 type State = Int
@@ -28,20 +30,20 @@ reducer st = case _ of
   Decrement -> st - 1
 ```
 
-And then you use the `makeStore` function from this library. Note that `makeStore` itself is not a hook function, but a **higher-order hook**, because it accepts some inputs and produce a hook. The first argumnt is the **unique** identifier of your store. The second argument is the initial state value.
+And then we use the `makeStore'` function from this library. Note that `makeStore'` itself is not a hook function, but a **higher-order hook**, because it accepts some inputs and produce a hook function. The first argumnt is the **unique** identifier of our store. The second argument is the initial state value.
 
 **Please be sure not to create multiple stores of the same ID, because doing so will bring things to mess up.**
 
 ```purs
-import Halogen.Helix (makeStore, UseHelix)
+import Halogen.Helix (makeStore', UseHelix)
 
 useCounter :: forall ctx m. MonadEffect m => Eq ctx => UseHelixHook State Action ctx m
-useCounter = makeStore "counter" 0 reducer
+useCounter = makeStore' "counter" 0 reducer
 ```
 
-It's now time to connect your Halogen components to the store!
-To do that, it is as simple as calling your hook returned by the `makeStore`.
-The hook accepts single argument `selector`, which has a type `State -> part`, selects the part of the store visible to the component.
+It's now time to connect our Halogen components to the Helix store!
+To do that, it is as simple as calling our hook returned by the `makeStore'`.
+The hook function accepts single argument `selector`, which has a type `State -> part`, selects the part of the store visible to the component.
 In this case, the `State` type is `Int`, and we want our component to have access to the entire store, so we provide `identity`.
 
 ```purs
@@ -65,7 +67,7 @@ As with other hooks, the `state` is pure value and intended only to be used in t
 
 The context object contains two functions:
 
-- `getState :: HookM m state` ... returns the current value of the (selected part of the) state.
+- `getState :: HookM m state` ... returns the current value of the (selected part of the) state.in
 - `dispatch :: action -> HookM m Unit` ... accepts the `Action` value and dispatches it to the Helix store manager. Behind the scene, the Helix store manager calculates the next state value using the dispatched action and reducer, updates the state with that value.
 
 Here is our completed example:
@@ -97,6 +99,73 @@ conuter = Hooks.component \_ _ -> Hooks.do
 ```
 
 For a bit more realistic example, please refer to the `example` director, which contains a very simple Todo app.
+
+## Middlewares
+
+The Helix store is kept intentionally simple; we can manipulate the store in a very restricted manner - the only thing we can do to interact with store is to dispatch an action, and calculating of the next state is a pure computation. Sometimes, however, it might be necessary to do more than such a thing, and state manipulation might be accompanied by some effectful tasks, especially in a real-world app.
+
+For such a needs, Helix offers the way to extend store's functionality via almost arbitrary effectful computation: **Middlewares**.
+A Helix middleware is a bunch of effectful computations which can be inserted in various points in _dispatching - reducer - state update_ flow.
+Via middlewares, we can do almost arbitrary effectful task, as long as it is captured by the `HooM m` monad. For instance, we can do:
+
+- logging a value to the console
+- generating random unieuq IDs (such as UUID)
+- making an AJAX call
+- controlling store manupulation flow by canceling state update or dispatching other actions conditionally
+
+A Helix middleware is just a function of three arguments:
+
+```purs
+type HelixMiddleware state action m
+   = HelixContext state action m
+  -> action
+  -> (action -> m Unit)
+  -> m Unit
+
+myMiddleware :: HelixMiddleware State Action m
+myMiddleware = \ctx action next -> ...
+```
+
+- `ctx` is a Helix context object, enabling us to access the store via `getState` and dispatching further actions via `dispatch`.
+- `action` is a dispatched action.
+- `next` is a next middleware. Middlewares can be added as many as you need, forming the middleware stack. By calling `next` with `action`, we can delegate the process to the next layer middleware.
+
+For instance, you can do logging dispatched action to the console via a middleware like this:
+
+```purs
+actionLogger :: HelixMiddleware state action m
+actionLogger ctx action next = do
+  Console.log $ "Action dispatched: " <> show action
+  next action
+```
+
+A middleware like this gives ability to logging the state value before and after updates:
+
+```purs
+stateLogger :: HelixMiddleware state action m
+stateLogger ctx action next = do
+  ctx.getState >>= show >>> ("Before state: " <> _) >>> Console.log
+  next action
+  ctx.getState >>= show >>> ("After state: " <> _) >>> Console.log
+```
+
+and you can combine two middlewares by `|>` operator:
+
+```purs
+import Halogen.Helix (HelixMiddleware, (|>))
+
+middlewareStack :: HelixMiddleware state action m
+middlewareStack = stateLogger |> actionLogger
+```
+
+You can apply your middleware to your store by using non-prime `makeStore`:
+
+```purs
+useCounter :: forall m s. MonadEffect m => Eq s => UseHelixHook State Action s m
+useCounter = makeStore "counter" 0 reducer middlewareStack
+```
+
+For more realistic usecase, please see the example app.
 
 ## Run example app
 
