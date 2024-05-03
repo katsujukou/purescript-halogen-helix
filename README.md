@@ -6,7 +6,7 @@ Lightweight global state management for PureScript Halogen.
 
 ## What is this?
 
-**PureScript Halogen Helix** is a global state management library for Halogen app.
+**PureScript Halogen Helix** is a global state management library for Halogen apps.
 
 At the time of writing, there already exists a great library sharing the same purpose: [halogen-store](https://github.com/thomashoneyman/purescript-halogen-store), but this library differs in several points:
 
@@ -30,15 +30,15 @@ reducer st = case _ of
   Decrement -> st - 1
 ```
 
-And then we use the `makeStore'` function from this library. Note that `makeStore'` itself is not a hook function, but a **higher-order hook**, because it accepts some inputs and produce a hook function. The first argumnt is the **unique** identifier of our store. The second argument is the initial state value.
+And then we use the `makeStore'` function from this library. Note that `makeStore'` itself is not a hook function, but a **higher-order hook**, because it accepts some inputs and produce a hook function. The first argument is the **unique** identifier of our store. The second argument is the initial state value.
 
-**Please be sure not to create multiple stores of the same ID, because doing so will bring things to mess up.**
+**Important:** Avoid creating multiple stores with the same ID to prevent conflicts.
 
 ```purs
 import Halogen.Helix (makeStore', UseHelix)
 
 useCounter :: forall ctx m. MonadEffect m => Eq ctx => UseHelixHook State Action ctx m
-useCounter = makeStore' "counter" 0 reducer
+useCounter = makeStore' "counter" reducer 0
 ```
 
 It's now time to connect our Halogen components to the Helix store!
@@ -54,9 +54,10 @@ import Halogen.HTML.Properties as HP
 import Halogen.HTML.Events as HE
 
 counter :: forall q i o m. MonadEffect m => H.Component q i o m
-conuter = Hooks.component \_ _ -> Hooks.do
+counter = Hooks.component \_ _ -> Hooks.do
   state /\ ctx <- useCounter identity
 ```
+_Note `/\` is an operator for creating `Tuple`, here used to unpack the returned `Tuple`_
 
 `useCounter` hook returns two things:
 
@@ -74,7 +75,7 @@ Here is our completed example:
 
 ```purs
 counter :: forall q i o m. MonadEffect m => H.Component q i o m
-conuter = Hooks.component \_ _ -> Hooks.do
+counter = Hooks.component \_ _ -> Hooks.do
   state /\ ctx <- useCounter identity
 
   Hooks.pure do
@@ -98,7 +99,7 @@ conuter = Hooks.component \_ _ -> Hooks.do
       ]
 ```
 
-For a bit more realistic example, please refer to the `example` director, which contains a very simple Todo app.
+For a bit more realistic example, please refer to the `example` directory, which contains a very simple Todo app.
 
 ## Middlewares
 
@@ -106,7 +107,7 @@ The Helix store is kept intentionally simple; we can manipulate the store in a v
 
 For such a needs, Helix offers the way to extend store's functionality via almost arbitrary effectful computation: **Middlewares**.
 A Helix middleware is a bunch of effectful computations which can be inserted in various points in _dispatching - reducer - state update_ flow.
-Via middlewares, we can do almost arbitrary effectful task, as long as it is captured by the `HooM m` monad. For instance, we can do:
+Via middlewares, we can do almost arbitrary effectful task, as long as it is captured by the `HookM m` monad. For instance, we can do:
 
 - logging a value to the console
 - generating random unieuq IDs (such as UUID)
@@ -162,7 +163,7 @@ You can apply your middleware to your store by using non-prime `makeStore`:
 
 ```purs
 useCounter :: forall m s. MonadEffect m => Eq s => UseHelixHook State Action s m
-useCounter = makeStore "counter" 0 reducer middlewareStack
+useCounter = makeStore "counter" reducer 0 middlewareStack
 ```
 
 For more realistic usecase, please see the example app.
