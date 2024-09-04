@@ -1,0 +1,16 @@
+package: 
+  name: example
+  dependencies:
+    - arrays
+    - console
+    - effect
+    - halogen
+    - halogen-helix
+    - halogen-hooks
+    - halogen-subscriptions
+    - lazy
+    - maybe
+    - prelude
+    - refs
+    - tuples
+    - uuid
