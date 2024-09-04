@@ -21,17 +21,14 @@ jobs:
       - name: Build environment with Nix flake
         run: nix develop --extra-experimental-features "nix-command flakes"
 
-      - name: Install test dependencies
-        run: npm ci
-
       - name: Build source
-        run: npm run build
+        run: spago build
 
       - name: Build examples
-        run: npm run example:build
+        run: spago build -p example && cd example && npx vite build
 
       - name: Run tests
-        run: npm run test
+        run: npm ci && spago test -m Test.Unit.Main && spago test -m Test.E2E.Main
 
       - name: Verify formatting
-        run: npm run check
+        run: purs-tidy check src test example/src
