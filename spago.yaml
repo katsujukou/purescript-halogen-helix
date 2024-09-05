@@ -1,5 +1,14 @@
 package:
   name: halogen-helix
+  description: "Lightweight global state management for PureScript Halogen."
+  publish:
+    version: 1.0.1
+    license: MIT
+    location:
+      githubOwner: katsujukou
+      githubRepo: purescript-halogen-helix
+  build:
+    strict: true
   dependencies:
     - effect
     - halogen-hooks
