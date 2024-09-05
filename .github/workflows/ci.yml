@@ -27,6 +27,9 @@ jobs:
       - name: Build source
         run: spago build
 
+      - name: Install npm packages
+        run: npm ci
+
       - name: Build examples
         run: spago build -p example && cd example && npx vite -c ../.github/workflows/vite.config.js build
 
