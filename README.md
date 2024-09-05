@@ -57,6 +57,7 @@ counter :: forall q i o m. MonadEffect m => H.Component q i o m
 counter = Hooks.component \_ _ -> Hooks.do
   state /\ ctx <- useCounter identity
 ```
+
 _Note `/\` is an operator for creating `Tuple`, here used to unpack the returned `Tuple`_
 
 `useCounter` hook returns two things:
@@ -177,4 +178,4 @@ npm i
 npm run example
 ```
 
-Open your favorite browser and go to http://localhost:5173.
+Open your favorite browser and go to `http://localhost:5173`.
