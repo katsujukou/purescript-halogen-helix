@@ -28,7 +28,7 @@ jobs:
         run: spago build
 
       - name: Build examples
-        run: spago build -p example && cd example && npx vite build
+        run: spago build -p example && cd example && npx vite -c ../.github/workflows/vite.config.js build
 
       - name: Run tests
         run: npm ci && spago test -m Test.Unit.Main && spago test -m Test.E2E.Main
