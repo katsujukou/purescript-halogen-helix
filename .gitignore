@@ -7,6 +7,7 @@
 /.purs*
 /.psa*
 /.vscode
+/.spec-results
 .spago
 output/
 output-es/

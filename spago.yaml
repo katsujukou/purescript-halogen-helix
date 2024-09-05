@@ -1,4 +1,4 @@
-package: 
+package:
   name: halogen-helix
   dependencies:
     - effect
@@ -7,11 +7,11 @@ package:
     - lazy
     - maybe
     - prelude
-    - refs 
+    - refs
     - tuples
   test:
-    main: Test.E2E.Main 
-    dependencies:  
+    main: Test.E2E.Main
+    dependencies:
       - aff
       - aff-promise
       - arrays
@@ -31,6 +31,7 @@ package:
       - prelude
       - refs
       - spec
+      - spec-node
       - transformers
       - tuples
       - unsafe-coerce
@@ -40,5 +41,5 @@ package:
 
 workspace:
   packageSet:
-    registry: 55.0.0
+    registry: 58.0.0
   extraPackages: {}
