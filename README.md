@@ -30,7 +30,7 @@ reducer st = case _ of
   Decrement -> st - 1
 ```
 
-And then we use the `makeStore'` function from this library. Note that `makeStore'` itself is not a hook function, but a **higher-order hook**, because it accepts some inputs and produce a hook function. The first argument is the **unique** identifier of our store. The second argument is the initial state value.
+And then we use the `makeStore'` function from this library. Note that `makeStore'` itself is not a hook function, but a **higher-order hook**, because it accepts some inputs and produce a hook function. The first argument is the **unique** identifier of our store. The third argument is the initial state value.
 
 **Important:** Avoid creating multiple stores with the same ID to prevent conflicts.
 
