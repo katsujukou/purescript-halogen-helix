@@ -5,7 +5,8 @@ import Prelude
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect.Class (class MonadEffect)
-import Halogen.Helix (UseHelixHook, makeStore')
+import Halogen.Helix (makeStore)
+import Halogen.Helix.Store (StoreId)
 
 type State = { count :: Int, switch :: Boolean }
 
@@ -26,5 +27,5 @@ reducer state = case _ of
 initialState :: State
 initialState = { count: 0, switch: false }
 
-useCounterSwitch :: forall s m. MonadEffect m => Eq s => UseHelixHook State Action s m
-useCounterSwitch = makeStore' "counter-switch" reducer initialState
+_counterSwitch :: forall m. MonadEffect m => StoreId State Action m
+_counterSwitch = makeStore "counter-switch" reducer initialState

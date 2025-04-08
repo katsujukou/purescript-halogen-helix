@@ -3,20 +3,22 @@ module Test.E2E.Environment.Middleware where
 import Prelude
 
 import Data.Tuple.Nested ((/\))
+import Effect.Class (class MonadEffect)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties (ButtonType(..))
 import Halogen.HTML.Properties as HP
-import Halogen.Helix (UseHelixHook, makeStore, (|>))
+import Halogen.Helix (makeStoreMiddleware, useStore, (|>))
+import Halogen.Helix.Store (StoreId)
 import Halogen.Hooks as Hooks
 import Test.E2E.Environment.Store (Action(..), State, initialState, reducer)
 import Test.E2E.Logger (class MonadLogger, writeLogLn)
 import Type.Proxy (Proxy(..))
 import Web.DOM.ParentNode (QuerySelector(..))
 
-useCounterSwitch :: forall m s. Eq s => MonadLogger m => UseHelixHook State Action s m
-useCounterSwitch = makeStore "counter-switch-mw" reducer initialState middleware
+_counterSwitch :: forall m. MonadEffect m => MonadLogger m => StoreId State Action m
+_counterSwitch = makeStoreMiddleware "counter-switch-mw" reducer initialState middleware
   where
   middleware = toggleDispatcher |> stateLogger |> actionLogger
 
@@ -38,7 +40,7 @@ useCounterSwitch = makeStore "counter-switch-mw" reducer initialState middleware
 
 component :: forall q i o m. MonadLogger m => H.Component q i o m
 component = Hooks.component \_ _ -> Hooks.do
-  state /\ { dispatch } <- useCounterSwitch identity
+  state /\ { dispatch } <- useStore _counterSwitch 
 
   Hooks.pure do
     HH.div [ HP.id "component" ]

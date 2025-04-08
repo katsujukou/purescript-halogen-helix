@@ -10,16 +10,17 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties (ButtonType(..))
 import Halogen.HTML.Properties as HP
+import Halogen.Helix (useStore)
 import Halogen.Hooks (captures, useQuery, useTickEffect)
 import Halogen.Hooks as Hooks
-import Test.E2E.Environment.Store (Action(..), useCounterSwitch)
+import Test.E2E.Environment.Store (Action(..), _counterSwitch)
 import Test.E2E.Logger (class MonadLogger, writeLogLn)
 import Type.Proxy (Proxy(..))
 import Web.DOM.ParentNode (QuerySelector(..))
 
 counter :: forall q i o m. MonadLogger m => H.Component q i o m
 counter = Hooks.component \_ _ -> Hooks.do
-  count /\ { dispatch } <- useCounterSwitch _.count
+  { count } /\ { dispatch } <- useStore _counterSwitch
 
   captures {} useTickEffect do
     writeLogLn counterLogMessage
@@ -39,7 +40,7 @@ counter = Hooks.component \_ _ -> Hooks.do
 
 switch :: forall q i o m. MonadLogger m => H.Component q i o m
 switch = Hooks.component \_ _ -> Hooks.do
-  state /\ { dispatch } <- useCounterSwitch _.switch
+  { switch: state } /\ { dispatch } <- useStore _counterSwitch 
 
   captures {} useTickEffect do
     writeLogLn switchLogMessage
@@ -59,7 +60,7 @@ switch = Hooks.component \_ _ -> Hooks.do
 
 whole :: forall q i o m. MonadAff m => MonadLogger m => H.Component q i o m
 whole = Hooks.component \_ _ -> Hooks.do
-  state /\ _ <- useCounterSwitch identity
+  state /\ _ <- useStore _counterSwitch
 
   captures {} useTickEffect do
     writeLogLn wholeLogMessage
@@ -98,7 +99,7 @@ data Query a = ResetStore a
 
 app :: forall i o m. MonadAff m => MonadLogger m => H.Component Query i o m
 app = Hooks.component \{ queryToken } _ -> Hooks.do
-  _ /\ { dispatch } <- useCounterSwitch (const {})
+  _ /\ { dispatch } <- useStore _counterSwitch 
 
   useQuery queryToken case _ of
     ResetStore next -> do
