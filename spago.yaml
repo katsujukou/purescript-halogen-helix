@@ -7,9 +7,10 @@ package:
     location:
       githubOwner: katsujukou
       githubRepo: purescript-halogen-helix
-  build:
-    strict: true
+  # build:
+  #   strict: true
   dependencies:
+    - debug
     - effect: ">=4.0.0 <5.0.0"
     - halogen-hooks: ">=0.6.3 <1.0.0"
     - halogen-subscriptions: ">=2.0.0 <3.0.0"

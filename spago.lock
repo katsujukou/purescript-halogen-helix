@@ -29,6 +29,7 @@ workspace:
           - contravariant
           - control
           - datetime
+          - debug
           - distributive
           - dom-indexed
           - effect
@@ -102,14 +103,15 @@ workspace:
       path: ./
       core:
         dependencies:
-          - effect
-          - halogen-hooks
-          - halogen-subscriptions
-          - lazy
-          - maybe
-          - prelude
-          - refs
-          - tuples
+          - debug
+          - effect: ">=4.0.0 <5.0.0"
+          - halogen-hooks: ">=0.6.3 <1.0.0"
+          - halogen-subscriptions: ">=2.0.0 <3.0.0"
+          - lazy: ">=6.0.0 <7.0.0"
+          - maybe: ">=6.0.0 <7.0.0"
+          - prelude: ">=6.0.1 <7.0.0"
+          - refs: ">=6.0.0 <7.0.0"
+          - tuples: ">=7.0.0 <8.0.0"
         build_plan:
           - aff
           - arrays
@@ -121,6 +123,7 @@ workspace:
           - contravariant
           - control
           - datetime
+          - debug
           - distributive
           - dom-indexed
           - effect
@@ -990,6 +993,13 @@ packages:
       - partial
       - prelude
       - tuples
+  debug:
+    type: registry
+    version: 6.0.2
+    integrity: sha256-vmkYFuXYuELBzeauvgHG6E6Kf/Hp1dAnxwE9ByHfwSg=
+    dependencies:
+      - functions
+      - prelude
   distributive:
     type: registry
     version: 6.0.0
