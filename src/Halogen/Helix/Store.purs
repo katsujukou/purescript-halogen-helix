@@ -1,23 +1,34 @@
 module Halogen.Helix.Store
   ( HelixStore
+  , StoreId
   , dispatch
   , emitState
   , getState
-  , mkHelixStore
+  , makeStore
+  , makeStoreMiddleware
   ) where
 
 import Prelude
 
-import Data.Lazy (Lazy, defer)
-import Data.Maybe (Maybe(..))
+import Data.Function.Uncurried (Fn2, runFn2)
 import Effect (Effect)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
-import Effect.Uncurried (EffectFn2, runEffectFn2)
-import Effect.Unsafe (unsafePerformEffect)
+import Effect.Uncurried (EffectFn1, runEffectFn1)
 import Halogen.Helix.Types (HelixMiddleware)
 import Halogen.Subscription as HS
+
+foreign import data StoreIdRep :: Type -> Type
+
+newtype StoreId s a m = StoreId (Effect (StoreIdRep (HelixStore s a m)))
+
+foreign import _mkSingletonStore :: forall a. Fn2 String a (Effect (StoreIdRep a))
+
+foreign import _getSingletonStore :: forall a. EffectFn1 (StoreIdRep a) a
+
+getSingletonStore :: forall s a m. StoreId s a m -> Effect (HelixStore s a m)
+getSingletonStore (StoreId id) = id >>= runEffectFn1 _getSingletonStore
 
 newtype HelixStore s a m = HelixStore
   { state :: Ref s
@@ -26,48 +37,57 @@ newtype HelixStore s a m = HelixStore
   , listener :: HS.Listener s
   }
 
-getState :: forall m s a. MonadEffect m => HelixStore s a m -> m s
-getState (HelixStore { state }) = liftEffect $ Ref.read state
+getState :: forall m s a. StoreId s a m -> Effect s
+getState storeId = getSingletonStore storeId >>= \(HelixStore { state }) -> Ref.read state
 
-dispatch :: forall m s a. MonadEffect m => HelixStore s a m -> a -> m Unit
-dispatch (HelixStore s) action = s.dispatch action
+dispatch :: forall m s a. MonadEffect m => StoreId s a m -> a -> m Unit
+dispatch storeId action = liftEffect (getSingletonStore storeId) >>= \(HelixStore st) -> st.dispatch action
 
-emitState :: forall s a m. HelixStore s a m -> HS.Emitter s
-emitState (HelixStore { emitter }) = emitter
+emitState :: forall s a m. Monad m => StoreId s a m -> Effect (HS.Emitter s)
+emitState storeId = getSingletonStore storeId <#> \(HelixStore st) -> st.emitter
 
-mkHelixStore
+makeStore
   :: forall s a m
    . MonadEffect m
   => String
-  -> s
   -> (s -> a -> s)
-  -> Maybe (HelixMiddleware s a m)
-  -> Effect (HelixStore s a m)
-mkHelixStore id initial reducer mbMiddleware =
-  runEffectFn2 unsafeGetOrCache id $
-    defer \_ -> unsafePerformEffect $ do
-      state <- Ref.new initial
-      { emitter, listener } <- HS.create
+  -> s
+  -> StoreId s a m
+makeStore id reducer initial = makeStoreMiddleware id reducer initial \_ act next -> next act
 
-      let
-        bareDispatch action = do
-          currentState <- Ref.read state
-          let newState = reducer currentState action
-          Ref.write newState state
-          HS.notify listener newState
+makeStoreMiddleware
+  :: forall s a m
+   . MonadEffect m
+  => String
+  -> (s -> a -> s)
+  -> s
+  -> HelixMiddleware s a m
+  -> StoreId s a m
+makeStoreMiddleware id reducer initial mw = StoreId $ runFn2 _mkSingletonStore id =<< storeEff
+  where
+  storeEff = do
+    state <- Ref.new initial
+    { emitter, listener } <- HS.create
 
-        dispatchImpl action = case mbMiddleware of
-          Just mw -> mw
-            { getState: liftEffect $ Ref.read state, dispatch: dispatchImpl }
-            action
-            (liftEffect <<< bareDispatch)
-          Nothing -> liftEffect <<< bareDispatch $ action
+    let
+      bareDispatch action = do
+        currentState <- Ref.read state
+        let newState = reducer currentState action
+        Ref.write newState state
+        HS.notify listener newState
 
-      pure $ HelixStore
-        { state
-        , dispatch: dispatchImpl
-        , listener
-        , emitter
-        }
+      dispatchImpl action = --case mbMiddleware of
 
-foreign import unsafeGetOrCache :: forall a. EffectFn2 String (Lazy a) a
+        --Just mw -> mw
+        mw
+          { getState: liftEffect $ Ref.read state, dispatch: dispatchImpl }
+          action
+          (liftEffect <<< bareDispatch)
+    --Nothing -> liftEffect <<< bareDispatch $ action
+
+    pure $ HelixStore
+      { state
+      , dispatch: dispatchImpl
+      , listener
+      , emitter
+      }
