@@ -3,9 +3,11 @@ module Test.Unit.Store where
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Unsafe (unsafePerformEffect)
-import Halogen.Helix.Store (dispatch, emitState, getState, mkHelixStore)
+import Halogen.Helix.Store (dispatch, emitState, mkHelixStore)
+import Halogen.Helix.Store as Store
 import Halogen.Subscription as HS
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -25,6 +27,9 @@ initialState = { count: 0, switch: false }
 
 spec :: Spec Unit
 spec = describe "Halogen.Helix.Store" do
+  let 
+    getState :: _ -> Aff _
+    getState = liftEffect <<< Store.getState
   describe "getState" do
     it "should return current value" do
       let store = unsafePerformEffect $ mkHelixStore "test1" initialState reducer Nothing

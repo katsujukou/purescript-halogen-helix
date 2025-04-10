@@ -21,11 +21,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1710146030,
-        "narHash": "sha256-SZ5L6eA7HJ/nmkzGG7/ISclqe6oZdOZTNoesiInkXPQ=",
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "b1d9ab70662946ef0850d488da1c9019f3a9752a",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
         "type": "github"
       },
       "original": {
@@ -59,11 +59,11 @@
         "slimlock": "slimlock"
       },
       "locked": {
-        "lastModified": 1724938718,
-        "narHash": "sha256-lE6fUo7cgMcO20mH+9VRhDoMLlC99K5lMEVuJm+UGEI=",
+        "lastModified": 1739795788,
+        "narHash": "sha256-PG4lO49fvWHpQoCN3mIGflisXF+5vEf91ceV9hsWTLU=",
         "owner": "thomashoneyman",
         "repo": "purescript-overlay",
-        "rev": "9970a549c72aa7a787ea7cc205a0d52c3589f799",
+        "rev": "f754c2ef94cef46e5d5223c25d3f361e1f6cb509",
         "type": "github"
       },
       "original": {
