@@ -7,8 +7,8 @@ package:
     location:
       githubOwner: katsujukou
       githubRepo: purescript-halogen-helix
-  # build:
-  #   strict: true
+  build:
+    strict: true
   dependencies:
     - effect: ">=4.0.0 <5.0.0"
     - halogen-hooks: ">=0.6.3 <1.0.0"
@@ -20,8 +20,6 @@ package:
     - tuples: ">=7.0.0 <8.0.0"
   test:
     main: Test.E2E.Main
-    build:
-      strict: true 
     dependencies:
       - aff
       - arrays
