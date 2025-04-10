@@ -81,7 +81,7 @@ spec = before setup do
 
       io.dispose :: Aff Unit
 
-    it "should rerender only when selected part of the store is updated" 
+    it "should rerender only when selected part of the store is updated"
       \{ console, window, elements, io, resetStore } -> do
         let click = clickAwait window
         resetStore

@@ -19,7 +19,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 counter :: forall q i o m. MonadLogger m => H.Component q i o m
 counter = Hooks.component \_ _ -> Hooks.do
-  {count} /\ { dispatch } <- useCounterSwitch (_.count >>> { count: _ })
+  { count } /\ { dispatch } <- useCounterSwitch (_.count >>> { count: _ })
 
   captures {} useTickEffect do
     writeLogLn counterLogMessage

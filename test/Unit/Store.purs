@@ -27,7 +27,7 @@ initialState = { count: 0, switch: false }
 
 spec :: Spec Unit
 spec = describe "Halogen.Helix.Store" do
-  let 
+  let
     getState :: _ -> Aff _
     getState = liftEffect <<< Store.getState
   describe "getState" do

@@ -21,7 +21,7 @@ import Halogen.Hooks as Hooks
 
 foreign import data UseHelix :: Type -> Hooks.HookType
 
-type UseHelix' state = UseState state  <> UseEffect <> Hooks.Pure
+type UseHelix' state = UseState state <> UseEffect <> Hooks.Pure
 
 instance HookNewtype (UseHelix s) (UseHelix' s)
 
@@ -65,7 +65,7 @@ mkHook store initialState selector = Hooks.do
     let emitter = Store.emitState store
     subscription <- Hooks.subscribe $ emitter <#> \nextState -> do
       prevState <- Hooks.get stateId
-      when (selector nextState /= selector prevState) do 
+      when (selector nextState /= selector prevState) do
         Hooks.put stateId nextState
 
     pure $ Just $ Hooks.unsubscribe subscription

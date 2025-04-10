@@ -49,7 +49,6 @@ workspace:
           - halogen-helix
           - halogen-hooks
           - halogen-subscriptions
-          - halogen-use-trigger-hooks
           - halogen-vdom
           - identity
           - integers
@@ -106,10 +105,9 @@ workspace:
           - effect: ">=4.0.0 <5.0.0"
           - halogen-hooks: ">=0.6.3 <1.0.0"
           - halogen-subscriptions: ">=2.0.0 <3.0.0"
-          - halogen-use-trigger-hooks
           - lazy: ">=6.0.0 <7.0.0"
           - maybe: ">=6.0.0 <7.0.0"
-          - prelude: ">=6.0.1 <7.0.0"
+          - prelude: ">=6.0.2 <7.0.0"
           - refs: ">=6.0.0 <7.0.0"
           - tuples: ">=7.0.0 <8.0.0"
         build_plan:
@@ -142,7 +140,6 @@ workspace:
           - halogen
           - halogen-hooks
           - halogen-subscriptions
-          - halogen-use-trigger-hooks
           - halogen-vdom
           - identity
           - integers
@@ -836,10 +833,7 @@ workspace:
       yoga-tree: 1.0.0
       z3: 0.0.2
       zipperarray: 2.0.0
-  extra_packages:
-    halogen-use-trigger-hooks:
-      git: https://github.com/katsujukou/purescript-halogen-use-trigger-hooks.git
-      ref: v0.1.0
+  extra_packages: {}
 packages:
   aff:
     type: registry
@@ -1279,14 +1273,6 @@ packages:
       - refs
       - safe-coerce
       - unsafe-reference
-  halogen-use-trigger-hooks:
-    type: git
-    url: https://github.com/katsujukou/purescript-halogen-use-trigger-hooks.git
-    rev: ebf4b62f87fa5a9c4ae7a95fd53ac5c2c58a4211
-    dependencies:
-      - halogen-hooks
-      - prelude
-      - tuples
   halogen-vdom:
     type: registry
     version: 8.0.0

@@ -10,19 +10,18 @@ package:
   # build:
   #   strict: true
   dependencies:
-    - halogen-use-trigger-hooks
     - effect: ">=4.0.0 <5.0.0"
     - halogen-hooks: ">=0.6.3 <1.0.0"
     - halogen-subscriptions: ">=2.0.0 <3.0.0"
     - lazy: ">=6.0.0 <7.0.0"
     - maybe: ">=6.0.0 <7.0.0"
-    - prelude: ">=6.0.1 <7.0.0"
+    - prelude: ">=6.0.2 <7.0.0"
     - refs: ">=6.0.0 <7.0.0"
     - tuples: ">=7.0.0 <8.0.0"
   test:
     main: Test.E2E.Main
     build:
-      strict: false
+      strict: true 
     dependencies:
       - aff
       - arrays
@@ -55,7 +54,4 @@ package:
 workspace:
   packageSet:
     registry: 63.9.1
-  extraPackages:
-    halogen-use-trigger-hooks:
-      git: https://github.com/katsujukou/purescript-halogen-use-trigger-hooks.git
-      ref: v0.1.0
+  extraPackages: {}
