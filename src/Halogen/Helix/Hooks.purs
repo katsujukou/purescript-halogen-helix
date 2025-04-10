@@ -15,14 +15,12 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
-import Effect.Class.Console as Console
 import Effect.Unsafe (unsafePerformEffect)
-import Halogen.Helix.Store (StoreId)
+import Halogen.Helix.Store (StoreId, getInitialState)
 import Halogen.Helix.Store as Store
 import Halogen.Helix.Types (HelixContext, HelixMiddleware, HelixContext')
 import Halogen.Hooks (class HookNewtype, type (<>), HookType, UseEffect, UseState, useLifecycleEffect, useState)
 import Halogen.Hooks as Hooks
-import Halogen.UseTrigger (UseTrigger, useTrigger)
 import Unsafe.Coerce (unsafeCoerce)
 
 foreign import data UseHelix :: Type -> Hooks.HookType
@@ -33,6 +31,8 @@ type UseHelix' state = UseState state
     <> Hooks.Pure
 
 instance HookNewtype (UseHelix s) (UseHelix' s)
+
+foreign import unsafeSelect :: forall s a. (s -> a) -> s -> a 
 
 useSelector
   :: forall m state action part
@@ -45,7 +45,7 @@ useSelector storeId selector = Hooks.wrap hook
   where
   hook :: Hooks.Hook _ (UseHelix' _) _
   hook = Hooks.do
-    _ /\ prevId <- useState (unsafeCoerce {})
+    _ /\ prevId <- useState (unsafePerformEffect $ selector <$> getInitialState storeId)
     let
       connect :: Hooks.HookM m (Hooks.HookM m Unit)
       connect = do
@@ -63,11 +63,11 @@ useSelector storeId selector = Hooks.wrap hook
 
     let 
       ctx =
-        { getState: liftEffect $ selector <$> Store.getState storeId
+        { getState: liftEffect $ unsafeSelect selector <$> Store.getState storeId
         , dispatch: lift <<< Store.dispatch storeId
         }
 
-    Hooks.pure $ Tuple (unsafePerformEffect $ selector <$> Store.getState storeId) ctx
+    Hooks.pure $ Tuple (unsafePerformEffect $ unsafeSelect selector <$> Store.getState storeId) ctx
 
 useStore
   :: forall m state action

@@ -3,6 +3,7 @@ module Halogen.Helix.Store
   , StoreId
   , dispatch
   , emitState
+  , getInitialState
   , getState
   , makeStore
   , makeStoreMiddleware
@@ -19,6 +20,7 @@ import Effect.Ref as Ref
 import Effect.Uncurried (EffectFn1, runEffectFn1)
 import Halogen.Helix.Types (HelixMiddleware)
 import Halogen.Subscription as HS
+import Safe.Coerce (coerce)
 
 foreign import data StoreIdRep :: Type -> Type
 
@@ -32,11 +34,15 @@ getSingletonStore :: forall s a m. StoreId s a m -> Effect (HelixStore s a m)
 getSingletonStore (StoreId id) = id >>= runEffectFn1 _getSingletonStore
 
 newtype HelixStore s a m = HelixStore
-  { state :: Ref s
+  { initialState :: s 
+  , state :: Ref s
   , dispatch :: a -> m Unit
   , emitter :: HS.Emitter s
   , listener :: HS.Listener s
   }
+
+getInitialState :: forall s a m. StoreId s a m -> Effect s 
+getInitialState storeId = getSingletonStore storeId <#> \(HelixStore s) -> s.initialState 
 
 getState :: forall m s a. StoreId s a m -> Effect s
 getState storeId = getSingletonStore storeId >>= \(HelixStore { state }) -> Ref.read state
@@ -86,7 +92,8 @@ makeStoreMiddleware id reducer initial mw = StoreId $ runFn2 _mkSingletonStore i
           (liftEffect <<< bareDispatch)
 
     pure $ HelixStore
-      { state
+      { initialState: initial
+      , state
       , dispatch: dispatchImpl
       , listener
       , emitter
