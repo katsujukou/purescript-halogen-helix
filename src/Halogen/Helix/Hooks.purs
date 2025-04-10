@@ -32,8 +32,6 @@ type UseHelix' state = UseState state
 
 instance HookNewtype (UseHelix s) (UseHelix' s)
 
-foreign import unsafeSelect :: forall s a. (s -> a) -> s -> a 
-
 useSelector
   :: forall m state action part
    . MonadEffect m
@@ -45,14 +43,14 @@ useSelector storeId selector = Hooks.wrap hook
   where
   hook :: Hooks.Hook _ (UseHelix' _) _
   hook = Hooks.do
-    _ /\ prevId <- useState (unsafePerformEffect $ selector <$> getInitialState storeId)
+    prev /\ prevId <- useState (unsafePerformEffect $ selector <$> Store.getState storeId)
     let
       connect :: Hooks.HookM m (Hooks.HookM m Unit)
       connect = do
         emitter <- liftEffect $ Store.emitState storeId
         subscription <- Hooks.subscribe $ emitter <#> selector >>> \newState -> do
-          prev <- Hooks.get prevId
-          when (prev /= newState) do
+          prev' <- Hooks.get prevId
+          when (prev' /= newState) do
             Hooks.put prevId newState
             
         pure $ Hooks.unsubscribe subscription
@@ -63,11 +61,11 @@ useSelector storeId selector = Hooks.wrap hook
 
     let 
       ctx =
-        { getState: liftEffect $ unsafeSelect selector <$> Store.getState storeId
+        { getState: liftEffect $ selector <$> Store.getState storeId
         , dispatch: lift <<< Store.dispatch storeId
         }
 
-    Hooks.pure $ Tuple (unsafePerformEffect $ unsafeSelect selector <$> Store.getState storeId) ctx
+    Hooks.pure $ Tuple (unsafePerformEffect $ selector <$> Store.getState storeId) ctx
 
 useStore
   :: forall m state action
