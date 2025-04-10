@@ -6,7 +6,8 @@ module Halogen.Helix.Store
   , getState
   , makeStore
   , makeStoreMiddleware
-  ) where
+  )
+  where
 
 import Prelude
 
@@ -43,7 +44,7 @@ getState storeId = getSingletonStore storeId >>= \(HelixStore { state }) -> Ref.
 dispatch :: forall m s a. MonadEffect m => StoreId s a m -> a -> m Unit
 dispatch storeId action = liftEffect (getSingletonStore storeId) >>= \(HelixStore st) -> st.dispatch action
 
-emitState :: forall s a m. Monad m => StoreId s a m -> Effect (HS.Emitter s)
+emitState :: forall s a m. StoreId s a m -> Effect (HS.Emitter s)
 emitState storeId = getSingletonStore storeId <#> \(HelixStore st) -> st.emitter
 
 makeStore
@@ -70,20 +71,19 @@ makeStoreMiddleware id reducer initial mw = StoreId $ runFn2 _mkSingletonStore i
     { emitter, listener } <- HS.create
 
     let
+      bareDispatch :: a -> Effect Unit
       bareDispatch action = do
-        currentState <- Ref.read state
+        currentState <-  Ref.read state
         let newState = reducer currentState action
         Ref.write newState state
         HS.notify listener newState
 
-      dispatchImpl action = --case mbMiddleware of
-
-        --Just mw -> mw
+      dispatchImpl :: a -> m Unit
+      dispatchImpl action = 
         mw
           { getState: liftEffect $ Ref.read state, dispatch: dispatchImpl }
           action
           (liftEffect <<< bareDispatch)
-    --Nothing -> liftEffect <<< bareDispatch $ action
 
     pure $ HelixStore
       { state

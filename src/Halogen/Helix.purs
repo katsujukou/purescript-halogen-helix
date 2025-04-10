@@ -5,7 +5,7 @@ module Halogen.Helix
   , module Halogen.Helix.Types
   ) where
 
-import Halogen.Helix.Hooks (HelixContext', HelixMiddleware', UseHelix, UseHelixHook, useStore)
+import Halogen.Helix.Hooks (UseHelix, UseHelixHook, useStore, useSelector, useDispatch)
 import Halogen.Helix.Middleware (HelixMiddleware, (<|), (|>))
-import Halogen.Helix.Store (HelixStore, dispatch, emitState, getState, makeStore, makeStoreMiddleware)
+import Halogen.Helix.Store (HelixStore, makeStore, makeStoreMiddleware)
 import Halogen.Helix.Types (HelixContext, HelixMiddleware)

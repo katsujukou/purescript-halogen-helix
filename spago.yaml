@@ -52,4 +52,3 @@ package:
 workspace:
   packageSet:
     registry: 63.9.1
-  extraPackages: {}

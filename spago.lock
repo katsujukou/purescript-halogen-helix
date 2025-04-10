@@ -12,6 +12,7 @@
             "halogen-helix",
             "halogen-hooks",
             "halogen-subscriptions",
+            "js-promise-aff",
             "lazy",
             "maybe",
             "prelude",
@@ -58,6 +59,7 @@
             "invariant",
             "js-date",
             "js-promise",
+            "js-promise-aff",
             "lazy",
             "lists",
             "maybe",
@@ -1457,6 +1459,16 @@
         "functions",
         "maybe",
         "prelude"
+      ]
+    },
+    "js-promise-aff": {
+      "type": "registry",
+      "version": "1.0.0",
+      "integrity": "sha256-s9kml9Ei74hKlMMg41yyZp4GkbmYUwaH+gBWWrdhwec=",
+      "dependencies": [
+        "aff",
+        "foreign",
+        "js-promise"
       ]
     },
     "lazy": {

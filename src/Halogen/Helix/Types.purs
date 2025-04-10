@@ -9,6 +9,7 @@ import Prelude
 
 import Halogen.Hooks as Hooks
 
+type HelixContext :: Type -> Type -> (Type -> Type) -> Type
 type HelixContext state action m =
   { dispatch :: action -> m Unit
   , getState :: m state

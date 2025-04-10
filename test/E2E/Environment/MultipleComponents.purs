@@ -11,6 +11,7 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties (ButtonType(..))
 import Halogen.HTML.Properties as HP
 import Halogen.Helix (useStore)
+import Halogen.Helix.Hooks (useDispatch, useSelector)
 import Halogen.Hooks (captures, useQuery, useTickEffect)
 import Halogen.Hooks as Hooks
 import Test.E2E.Environment.Store (Action(..), _counterSwitch)
@@ -20,7 +21,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 counter :: forall q i o m. MonadLogger m => H.Component q i o m
 counter = Hooks.component \_ _ -> Hooks.do
-  { count } /\ { dispatch } <- useStore _counterSwitch
+  s /\ { dispatch } <- useSelector _counterSwitch (_.count >>> { count: _ })
 
   captures {} useTickEffect do
     writeLogLn counterLogMessage
@@ -29,7 +30,7 @@ counter = Hooks.component \_ _ -> Hooks.do
   Hooks.pure do
     HH.div
       [ HP.id "counter" ]
-      [ HH.span [ HP.id "value" ] [ HH.text $ show count ]
+      [ HH.span [ HP.id "value" ] [ HH.text $ show s.count ]
       , HH.button
           [ HP.type_ ButtonButton
           , HP.id "button"
@@ -40,7 +41,7 @@ counter = Hooks.component \_ _ -> Hooks.do
 
 switch :: forall q i o m. MonadLogger m => H.Component q i o m
 switch = Hooks.component \_ _ -> Hooks.do
-  { switch: state } /\ { dispatch } <- useStore _counterSwitch 
+  s /\ { dispatch } <- useSelector _counterSwitch (_.switch >>> { switch: _ })
 
   captures {} useTickEffect do
     writeLogLn switchLogMessage
@@ -49,7 +50,7 @@ switch = Hooks.component \_ _ -> Hooks.do
   Hooks.pure do
     HH.div
       [ HP.id "switch" ]
-      [ HH.span [ HP.id "value" ] [ HH.text $ if state then "ON" else "OFF" ]
+      [ HH.span [ HP.id "value" ] [ HH.text $ if s.switch then "ON" else "OFF" ]
       , HH.button
           [ HP.type_ ButtonButton
           , HP.id "button"
@@ -99,7 +100,7 @@ data Query a = ResetStore a
 
 app :: forall i o m. MonadAff m => MonadLogger m => H.Component Query i o m
 app = Hooks.component \{ queryToken } _ -> Hooks.do
-  _ /\ { dispatch } <- useStore _counterSwitch 
+  dispatch <- useDispatch _counterSwitch 
 
   useQuery queryToken case _ of
     ResetStore next -> do
