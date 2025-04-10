@@ -33,6 +33,7 @@ package:
       - halogen
       - halogen-hooks
       - halogen-subscriptions
+      - halogen-use-trigger-hooks
       - lazy
       - lists
       - maybe
@@ -52,3 +53,7 @@ package:
 workspace:
   packageSet:
     registry: 63.9.1
+  extraPackages:
+    halogen-use-trigger-hooks:
+      git: https://github.com/katsujukou/purescript-halogen-use-trigger-hooks.git
+      ref: main

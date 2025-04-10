@@ -10,8 +10,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties (ButtonType(..))
 import Halogen.HTML.Properties as HP
-import Halogen.Helix (useStore)
-import Halogen.Helix.Hooks (useDispatch, useSelector)
+import Halogen.Helix (useStore, useDispatch, useSelector)
 import Halogen.Hooks (captures, useQuery, useTickEffect)
 import Halogen.Hooks as Hooks
 import Test.E2E.Environment.Store (Action(..), _counterSwitch)
@@ -23,7 +22,7 @@ counter :: forall q i o m. MonadLogger m => H.Component q i o m
 counter = Hooks.component \_ _ -> Hooks.do
   s /\ { dispatch } <- useSelector _counterSwitch (_.count >>> { count: _ })
 
-  captures {} useTickEffect do
+  captures { s } useTickEffect do
     writeLogLn counterLogMessage
     pure Nothing
 
@@ -43,7 +42,7 @@ switch :: forall q i o m. MonadLogger m => H.Component q i o m
 switch = Hooks.component \_ _ -> Hooks.do
   s /\ { dispatch } <- useSelector _counterSwitch (_.switch >>> { switch: _ })
 
-  captures {} useTickEffect do
+  captures { s } useTickEffect do
     writeLogLn switchLogMessage
     pure Nothing
 
@@ -100,7 +99,7 @@ data Query a = ResetStore a
 
 app :: forall i o m. MonadAff m => MonadLogger m => H.Component Query i o m
 app = Hooks.component \{ queryToken } _ -> Hooks.do
-  dispatch <- useDispatch _counterSwitch 
+  dispatch <- useDispatch _counterSwitch
 
   useQuery queryToken case _ of
     ResetStore next -> do
