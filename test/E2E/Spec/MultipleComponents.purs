@@ -36,9 +36,9 @@ type TestEnv =
       }
   }
 
-setup :: Aff TestEnv
-setup = do
-  { window, console, io } <- Environment.setup app
+setup :: String -> Aff TestEnv
+setup isolator = do
+  { window, console, io } <- Environment.setup (app isolator)
   pn <- liftEffect $ HTMLDocument.toParentNode <$> document window
   elements <- { counterValue: _, incrementBtn: _, switchValue: _, toggleBtn: _, wholeValue: _ }
     <$> unsafeQuerySelector (_counter .> _value) pn
@@ -64,32 +64,34 @@ textContentShouldBe :: forall m a. MonadEffect m => MonadThrow Error m => Show a
 textContentShouldBe el = show >>> (el `HTML.textContentShouldBe` _)
 
 spec :: Spec Unit
-spec = before setup do
-  describe "Multiple components app" do
-    it "should share same state accross multiple components" \{ window, elements, resetStore, io } -> do
-      let click = clickAwait window
+spec = describe "Multiple components app" do
+  before (setup "test 1") do
+    it "should share same state accross multiple components"
+      \{ window, elements, resetStore, io } -> do
+        let click = clickAwait window
 
-      resetStore
+        resetStore
 
-      click elements.incrementBtn
-      elements.counterValue `textContentShouldBe` 1
-      elements.wholeValue `textContentShouldBe` { count: 1, switch: false }
+        click elements.incrementBtn
+        elements.counterValue `textContentShouldBe` 1
+        elements.wholeValue `textContentShouldBe` { count: 1, switch: false }
 
-      click elements.toggleBtn
-      elements.switchValue `HTML.textContentShouldBe` "ON"
-      elements.wholeValue `textContentShouldBe` { count: 1, switch: true }
+        click elements.toggleBtn
+        elements.switchValue `HTML.textContentShouldBe` "ON"
+        elements.wholeValue `textContentShouldBe` { count: 1, switch: true }
 
-      io.dispose :: Aff Unit
+        io.dispose :: Aff Unit
 
+  before (setup "test2") do
     it "should rerender only when selected part of the store is updated"
       \{ console, window, elements, io, resetStore } -> do
         let click = clickAwait window
         resetStore
+        resetLog console
+        console `logShouldBe` []
         click elements.incrementBtn
         -- clicking Increment button should not cause rerendering of toggle switch component
-        console `logShouldBe` fold
-          [ logStreamAfterClickingIncrement
-          ]
+        console `logShouldBe` logStreamAfterClickingIncrement
 
         click elements.toggleBtn
         -- clicking Toggle button should not cause rerendering of counter component

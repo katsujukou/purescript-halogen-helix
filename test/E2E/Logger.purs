@@ -8,6 +8,7 @@ module Test.E2E.Logger
   , runLoggerT
   , writeLog
   , writeLogLn
+  , clearLog
   ) where
 
 import Prelude
@@ -18,6 +19,7 @@ import Control.Monad.Writer as W
 import Data.Array as Array
 import Data.List (List)
 import Data.List as L
+import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
@@ -28,9 +30,11 @@ import Halogen.Hooks as Hooks
 
 class MonadEffect m <= MonadLogger m where
   writeLog :: List String -> m Unit
+  clearLog :: m Unit
 
 instance MonadLogger m => MonadLogger (Hooks.HookM m) where
   writeLog = writeLog >>> lift
+  clearLog = lift clearLog
 
 writeLogLn :: forall m. MonadLogger m => String -> m Unit
 writeLogLn = L.singleton >>> writeLog
@@ -52,6 +56,7 @@ derive newtype instance MonadTrans LoggerT
 
 instance MonadEffect m => MonadLogger (LoggerT m) where
   writeLog = W.tell >>> LoggerT
+  clearLog = LoggerT $ W.pass (pure $ Tuple unit (const L.Nil))
 
 type VirtualConsole = Ref (List String)
 

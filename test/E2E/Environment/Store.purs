@@ -26,5 +26,7 @@ reducer state = case _ of
 initialState :: State
 initialState = { count: 0, switch: false }
 
-useCounterSwitch :: forall s m. MonadEffect m => Eq s => UseHelixHook State Action s m
-useCounterSwitch = makeStore' "counter-switch" reducer initialState
+-- In order to create dedicated store for each test suit,
+-- useCounterSwitch accepts store id.
+useCounterSwitch :: String -> forall s m. MonadEffect m => Eq s => UseHelixHook State Action s m
+useCounterSwitch id = makeStore' id reducer initialState

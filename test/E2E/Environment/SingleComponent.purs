@@ -16,7 +16,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 component :: forall q i o m. MonadEffect m => H.Component q i o m
 component = Hooks.component \_ _ -> Hooks.do
-  state /\ { dispatch } <- useCounterSwitch identity
+  state /\ { dispatch } <- useCounterSwitch "component" identity
 
   Hooks.pure do
     HH.div [ HP.id "component" ]

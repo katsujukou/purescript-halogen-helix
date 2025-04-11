@@ -49,6 +49,7 @@ workspace:
           - halogen-helix
           - halogen-hooks
           - halogen-subscriptions
+          - halogen-use-trigger-hooks
           - halogen-vdom
           - identity
           - integers
@@ -105,6 +106,7 @@ workspace:
           - effect: ">=4.0.0 <5.0.0"
           - halogen-hooks: ">=0.6.3 <1.0.0"
           - halogen-subscriptions: ">=2.0.0 <3.0.0"
+          - halogen-use-trigger-hooks: ">=1.0.0 <2.0.0"
           - lazy: ">=6.0.0 <7.0.0"
           - maybe: ">=6.0.0 <7.0.0"
           - prelude: ">=6.0.2 <7.0.0"
@@ -140,6 +142,7 @@ workspace:
           - halogen
           - halogen-hooks
           - halogen-subscriptions
+          - halogen-use-trigger-hooks
           - halogen-vdom
           - identity
           - integers
@@ -306,7 +309,7 @@ workspace:
           - web-uievents
   package_set:
     address:
-      registry: 63.9.1
+      registry: 63.10.0
     compiler: ">=0.15.15 <0.16.0"
     content:
       abc-parser: 2.0.1
@@ -488,6 +491,7 @@ workspace:
       halogen-subscriptions: 2.0.0
       halogen-svg-elems: 8.0.0
       halogen-typewriter: 1.0.4
+      halogen-use-trigger-hooks: 0.1.0
       halogen-vdom: 8.0.0
       halogen-vdom-string-renderer: 0.5.0
       halogen-xterm: 2.0.0
@@ -833,7 +837,10 @@ workspace:
       yoga-tree: 1.0.0
       z3: 0.0.2
       zipperarray: 2.0.0
-  extra_packages: {}
+  extra_packages:
+    halogen-use-trigger-hooks:
+      git: https://github.com/katsujukou/purescript-halogen-use-trigger-hooks
+      ref: v1.0.0
 packages:
   aff:
     type: registry
@@ -1273,6 +1280,19 @@ packages:
       - refs
       - safe-coerce
       - unsafe-reference
+  halogen-use-trigger-hooks:
+    type: git
+    url: https://github.com/katsujukou/purescript-halogen-use-trigger-hooks
+    rev: 2c541c12bf6dd33e02cc45227a89373d7796de5b
+    dependencies:
+      - arrays
+      - effect
+      - foldable-traversable
+      - halogen-hooks
+      - maybe
+      - prelude
+      - refs
+      - tuples
   halogen-vdom:
     type: registry
     version: 8.0.0

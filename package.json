@@ -21,7 +21,8 @@
     "test:E2E": "spago test -m Test.E2E.Main",
     "example": "npm run example:build && cd example && vite serve",
     "example:build": "spago build -p example && cd example && vite build",
-    "check": "purs-tidy check src test example/src"
+    "check": "purs-tidy check src test example/src",
+    "format": "purs-tidy format-in-place src test example/src"
   },
   "deependencies": {},
   "devDependencies": {

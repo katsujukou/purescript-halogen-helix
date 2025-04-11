@@ -8,7 +8,7 @@ import Effect.Class (class MonadEffect)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.Helix (UseHelixHook, makeStore')
-import Halogen.Hooks (useLifecycleEffect)
+import Halogen.Hooks (useLifecycleEffect, useState)
 import Halogen.Hooks as Hooks
 import Type.Proxy (Proxy(..))
 
@@ -41,10 +41,17 @@ dispatchOnInitialize = Hooks.component \_ _ -> Hooks.do
       HH.div_
         [ HH.text $ show state
         , HH.slot_ (Proxy :: _ "child") unit child {}
+        , HH.slot_ (Proxy :: _ "child2") unit child2 {}
         ]
 
 child :: forall q i o m. MonadEffect m => H.Component q i o m
 child = Hooks.component \_ _ -> Hooks.do
   { value } /\ _ <- useMyStore (_.value >>> { value: _ })
+  Hooks.pure do
+    HH.text $ if value then "ON" else "OFF"
+
+child2 :: forall q i o m. MonadEffect m => H.Component q i o m
+child2 = Hooks.component \_ _ -> Hooks.do
+  { value } /\ _ <- useState { value: false }
   Hooks.pure do
     HH.text $ if value then "ON" else "OFF"
