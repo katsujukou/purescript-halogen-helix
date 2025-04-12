@@ -17,9 +17,9 @@ import Test.E2E.Logger (class MonadLogger, writeLogLn)
 import Type.Proxy (Proxy(..))
 import Web.DOM.ParentNode (QuerySelector(..))
 
-counter :: forall q i o m. MonadLogger m => H.Component q i o m
-counter = Hooks.component \_ _ -> Hooks.do
-  count /\ { dispatch } <- useCounterSwitch _.count
+counter :: String -> forall q i o m. MonadLogger m => H.Component q i o m
+counter isolator = Hooks.component \_ _ -> Hooks.do
+  { count } /\ { dispatch } <- useCounterSwitch isolator (_.count >>> { count: _ })
 
   captures {} useTickEffect do
     writeLogLn counterLogMessage
@@ -37,9 +37,9 @@ counter = Hooks.component \_ _ -> Hooks.do
           [ HH.text "+1" ]
       ]
 
-switch :: forall q i o m. MonadLogger m => H.Component q i o m
-switch = Hooks.component \_ _ -> Hooks.do
-  state /\ { dispatch } <- useCounterSwitch _.switch
+switch :: String -> forall q i o m. MonadLogger m => H.Component q i o m
+switch isolator = Hooks.component \_ _ -> Hooks.do
+  { switch: state } /\ { dispatch } <- useCounterSwitch isolator (_.switch >>> { switch: _ })
 
   captures {} useTickEffect do
     writeLogLn switchLogMessage
@@ -57,9 +57,9 @@ switch = Hooks.component \_ _ -> Hooks.do
           [ HH.text "Toggle" ]
       ]
 
-whole :: forall q i o m. MonadAff m => MonadLogger m => H.Component q i o m
-whole = Hooks.component \_ _ -> Hooks.do
-  state /\ _ <- useCounterSwitch identity
+whole :: String -> forall q i o m. MonadAff m => MonadLogger m => H.Component q i o m
+whole isolator = Hooks.component \_ _ -> Hooks.do
+  state /\ _ <- useCounterSwitch isolator identity
 
   captures {} useTickEffect do
     writeLogLn wholeLogMessage
@@ -96,9 +96,9 @@ _button = QuerySelector "#button"
 
 data Query a = ResetStore a
 
-app :: forall i o m. MonadAff m => MonadLogger m => H.Component Query i o m
-app = Hooks.component \{ queryToken } _ -> Hooks.do
-  _ /\ { dispatch } <- useCounterSwitch (const {})
+app :: forall i o m. MonadAff m => MonadLogger m => String -> H.Component Query i o m
+app isolator = Hooks.component \{ queryToken } _ -> Hooks.do
+  _ /\ { dispatch } <- useCounterSwitch isolator (const {})
 
   useQuery queryToken case _ of
     ResetStore next -> do
@@ -107,7 +107,7 @@ app = Hooks.component \{ queryToken } _ -> Hooks.do
 
   Hooks.pure do
     HH.div [ HP.id "app" ]
-      [ HH.slot (Proxy :: _ "counter") unit counter {} absurd
-      , HH.slot (Proxy :: _ "switch") unit switch {} absurd
-      , HH.slot (Proxy :: _ "whole") unit whole {} absurd
+      [ HH.slot (Proxy :: _ "counter") unit (counter isolator) {} absurd
+      , HH.slot (Proxy :: _ "switch") unit (switch isolator) {} absurd
+      , HH.slot (Proxy :: _ "whole") unit (whole isolator) {} absurd
       ]

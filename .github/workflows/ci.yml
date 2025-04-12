@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: "*"
   pull_request:
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
         run: spago build -p example && cd example && npx vite -c ../.github/workflows/vite.config.js build
 
       - name: Run tests
-        run: npm ci && spago test -m Test.Unit.Main && spago test -m Test.E2E.Main
+        run: npm ci && npm run test
 
       - name: Verify formatting
-        run: purs-tidy check src test example/src
+        run: npm run check

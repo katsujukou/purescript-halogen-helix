@@ -26,8 +26,8 @@ newtype HelixStore s a m = HelixStore
   , listener :: HS.Listener s
   }
 
-getState :: forall m s a. MonadEffect m => HelixStore s a m -> m s
-getState (HelixStore { state }) = liftEffect $ Ref.read state
+getState :: forall m s a. MonadEffect m => HelixStore s a m -> Effect s
+getState (HelixStore { state }) = Ref.read state
 
 dispatch :: forall m s a. MonadEffect m => HelixStore s a m -> a -> m Unit
 dispatch (HelixStore s) action = s.dispatch action
