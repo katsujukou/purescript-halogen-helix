@@ -40,7 +40,7 @@ _counterSwitch = makeStoreMiddleware "counter-switch-mw" reducer initialState mi
 
 component :: forall q i o m. MonadLogger m => H.Component q i o m
 component = Hooks.component \_ _ -> Hooks.do
-  state /\ { dispatch } <- useStore _counterSwitch 
+  state /\ { dispatch } <- useStore _counterSwitch
 
   Hooks.pure do
     HH.div [ HP.id "component" ]

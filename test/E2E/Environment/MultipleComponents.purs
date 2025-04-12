@@ -10,7 +10,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties (ButtonType(..))
 import Halogen.HTML.Properties as HP
-import Halogen.Helix (useStore, useDispatch, useSelector)
+import Halogen.Helix (useDispatch, useSelector, useStore)
 import Halogen.Hooks (captures, useQuery, useTickEffect)
 import Halogen.Hooks as Hooks
 import Test.E2E.Environment.Store (Action(..), _counterSwitch)
@@ -20,16 +20,16 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 counter :: String -> forall q i o m. MonadLogger m => H.Component q i o m
 counter isolator = Hooks.component \_ _ -> Hooks.do
-  { count } /\ { dispatch } <- useCounterSwitch isolator (_.count >>> { count: _ })
+  { count } /\ { dispatch } <- useSelector (_counterSwitch isolator) (_.count >>> { count: _ })
 
-  captures { s } useTickEffect do
+  captures {} useTickEffect do
     writeLogLn counterLogMessage
     pure Nothing
 
   Hooks.pure do
     HH.div
       [ HP.id "counter" ]
-      [ HH.span [ HP.id "value" ] [ HH.text $ show s.count ]
+      [ HH.span [ HP.id "value" ] [ HH.text $ show count ]
       , HH.button
           [ HP.type_ ButtonButton
           , HP.id "button"
@@ -40,16 +40,16 @@ counter isolator = Hooks.component \_ _ -> Hooks.do
 
 switch :: String -> forall q i o m. MonadLogger m => H.Component q i o m
 switch isolator = Hooks.component \_ _ -> Hooks.do
-  { switch: state } /\ { dispatch } <- useCounterSwitch isolator (_.switch >>> { switch: _ })
+  { switch: state } /\ { dispatch } <- useSelector (_counterSwitch isolator) (_.switch >>> { switch: _ })
 
-  captures { s } useTickEffect do
+  captures {} useTickEffect do
     writeLogLn switchLogMessage
     pure Nothing
 
   Hooks.pure do
     HH.div
       [ HP.id "switch" ]
-      [ HH.span [ HP.id "value" ] [ HH.text $ if s.switch then "ON" else "OFF" ]
+      [ HH.span [ HP.id "value" ] [ HH.text $ if state then "ON" else "OFF" ]
       , HH.button
           [ HP.type_ ButtonButton
           , HP.id "button"
@@ -60,7 +60,7 @@ switch isolator = Hooks.component \_ _ -> Hooks.do
 
 whole :: String -> forall q i o m. MonadAff m => MonadLogger m => H.Component q i o m
 whole isolator = Hooks.component \_ _ -> Hooks.do
-  state /\ _ <- useCounterSwitch isolator identity
+  state /\ _ <- useStore (_counterSwitch isolator)
 
   captures {} useTickEffect do
     writeLogLn wholeLogMessage
@@ -99,7 +99,7 @@ data Query a = ResetStore a
 
 app :: forall i o m. MonadAff m => MonadLogger m => String -> H.Component Query i o m
 app isolator = Hooks.component \{ queryToken } _ -> Hooks.do
-  _ /\ { dispatch } <- useCounterSwitch isolator (const {})
+  dispatch <- useDispatch (_counterSwitch isolator)
 
   useQuery queryToken case _ of
     ResetStore next -> do

@@ -14,16 +14,16 @@ import Example.Types (TodoItem)
 import Halogen.Helix (HelixMiddleware, makeStoreMiddleware, (<|))
 import Halogen.Helix.Store (StoreId)
 
-type State = 
+type State =
   { items :: Array TodoItem
-  , count :: Int 
+  , count :: Int
   }
 
 data Action
   = AddTodo String
   | MarkDone UUID.UUID
   | CreateTodoItem UUID.UUID String
-  | SetCount Int 
+  | SetCount Int
 
 derive instance Generic Action _
 instance Show Action where
@@ -47,7 +47,7 @@ initialState = unsafePerformEffect do
   item1 <- { id: _, title: "Develop Halogen App", done: false } <$> UUID.genUUID
   item2 <- { id: _, title: "Study Category Theory", done: false } <$> UUID.genUUID
   item3 <- { id: _, title: "Eat Icecream", done: false } <$> UUID.genUUID
-  pure 
+  pure
     { items: [ item1, item2, item3 ]
     , count: 0
     }
@@ -57,9 +57,11 @@ _todos = makeStoreMiddleware "todos" reducer initialState middlewares
   where
   reducer st act = case act of
     CreateTodoItem id title -> st { items = st.items `snoc` { id, title, done: false } }
-    MarkDone id -> st { items = fromMaybe st.items
-      $ (\idx -> modifyAt idx (_ { done = true }) st.items)
-          <=< findIndex ((_ == id) <<< _.id)
-      $ st.items }
+    MarkDone id -> st
+      { items = fromMaybe st.items
+          $ (\idx -> modifyAt idx (_ { done = true }) st.items)
+              <=< findIndex ((_ == id) <<< _.id)
+          $ st.items
+      }
     SetCount n -> st { count = n }
     _ -> st

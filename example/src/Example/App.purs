@@ -37,7 +37,7 @@ app = Hooks.component \_ _ -> Hooks.do
 
 todoItemList :: forall q i o m. MonadEffect m => H.Component q i o m
 todoItemList = Hooks.component \_ _ -> Hooks.do
-  { items: todos } /\ ctx <- useStore _todos 
+  { items: todos } /\ ctx <- useStore _todos
 
   let
     classString done = "todo-item " <> case done of
@@ -46,20 +46,21 @@ todoItemList = Hooks.component \_ _ -> Hooks.do
 
   Hooks.pure do
     HH.div [] $ fold
-      [ [ HH.slot_ (Proxy :: _ "component-A") unit ComponentA.make {} 
-        , HH.slot_ (Proxy :: _ "component-B") unit ComponentB.make {} 
+      [ [ HH.slot_ (Proxy :: _ "component-A") unit ComponentA.make {}
+        , HH.slot_ (Proxy :: _ "component-B") unit ComponentB.make {}
         ]
       , todos <#> \todo -> do
-        HH.div
-          [ HP.class_ $ ClassName $ classString todo.done
-          , HE.onClick \_ -> ctx.dispatch (MarkDone todo.id)
-          ]
-          [ HH.text todo.title ]
+          HH.div
+            [ HP.class_ $ ClassName $ classString todo.done
+            , HE.onClick \_ -> ctx.dispatch (MarkDone todo.id)
+            ]
+            [ HH.text todo.title ]
       ]
+
 addTodoItemForm :: forall q i o m. MonadEffect m => H.Component q i o m
 addTodoItemForm = Hooks.component \_ _ -> Hooks.do
   text /\ textId <- useState ""
-  _ /\ ctx <- useStore _todos 
+  _ /\ ctx <- useStore _todos
 
   let
     handleClick = do

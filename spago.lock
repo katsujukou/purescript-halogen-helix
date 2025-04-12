@@ -31,6 +31,7 @@
             "contravariant",
             "control",
             "datetime",
+            "debug",
             "distributive",
             "dom-indexed",
             "effect",
@@ -109,6 +110,7 @@
         "path": "./",
         "core": {
           "dependencies": [
+            "debug",
             {
               "effect": ">=4.0.0 <5.0.0"
             },
@@ -148,6 +150,7 @@
             "contravariant",
             "control",
             "datetime",
+            "debug",
             "distributive",
             "dom-indexed",
             "effect",
@@ -225,6 +228,7 @@
             "halogen",
             "halogen-hooks",
             "halogen-subscriptions",
+            "halogen-use-trigger-hooks",
             "js-promise-aff",
             "lazy",
             "lists",
@@ -278,6 +282,7 @@
             "halogen",
             "halogen-hooks",
             "halogen-subscriptions",
+            "halogen-use-trigger-hooks",
             "halogen-vdom",
             "identity",
             "integers",

@@ -2,11 +2,9 @@ module Test.Unit.Store where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Effect.Unsafe (unsafePerformEffect)
-import Halogen.Helix.Store (dispatch, emitState, mkHelixStore)
+import Halogen.Helix.Store (StoreId, dispatch, emitState, makeStore)
 import Halogen.Helix.Store as Store
 import Halogen.Subscription as HS
 import Test.Spec (Spec, describe, it)
@@ -47,30 +45,30 @@ spec = describe "Halogen.Helix.Store" do
     getState = liftEffect <<< Store.getState
   describe "getState" do
     it "should return current value" do
-      value <-  liftEffect $ getState _test1
+      value <- getState _test1
       value `shouldEqual` initialState
 
   describe "dispatch" do
     it "should update state correctly: case Increment" do
-      before <- liftEffect $ getState _test2
+      before <- getState _test2
       dispatch _test2 Increment
-      after <- liftEffect $ getState _test2
+      after <- getState _test2
       after `shouldEqual` (before { count = before.count + 1 })
 
     it "should update state correctly: case Decrement" do
-      before <-  liftEffect $ getState _test3
+      before <- getState _test3
       dispatch _test3 Decrement
-      after <-  liftEffect $ getState _test3
+      after <- getState _test3
       after `shouldEqual` (before { count = before.count - 1 })
 
     it "should update state correctly: case Toggle" do
-      before <- liftEffect $  getState _test4
+      before <- getState _test4
       dispatch _test4 Toggle
-      after <-  liftEffect $ getState _test4
+      after <- getState _test4
       after `shouldEqual` (before { switch = not before.switch })
 
     it "should emit when dispatched" do
-      emitter <- liftEffect $  emitState _test5
-      _ <-  liftEffect $ HS.subscribe emitter \st -> do
+      emitter <- liftEffect $ emitState _test5
+      _ <- liftEffect $ HS.subscribe emitter \st -> do
         st `shouldEqual` (reducer initialState Increment)
       dispatch _test5 Increment

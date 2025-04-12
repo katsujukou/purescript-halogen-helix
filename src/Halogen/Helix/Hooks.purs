@@ -5,8 +5,7 @@ module Halogen.Helix.Hooks
   , useDispatch
   , useSelector
   , useStore
-  )
-  where
+  ) where
 
 import Prelude
 
@@ -17,7 +16,7 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Ref as Ref
 import Effect.Unsafe (unsafePerformEffect)
-import Halogen.Helix.Store (StoreId, getInitialState)
+import Halogen.Helix.Store (StoreId)
 import Halogen.Helix.Store as Store
 import Halogen.Helix.Types (HelixMiddleware', HelixContext')
 import Halogen.Hooks (class HookNewtype, type (<>), UseEffect, UseRef, UseState, useLifecycleEffect, useRef, useState)
@@ -41,15 +40,15 @@ useSelector
   => Eq part
   => StoreId state action m
   -> (state -> part)
-  -> Hooks.Hook m (UseHelix part) (part /\ (HelixContext' part action m))
+  -> Hooks.Hook m (UseHelix state m) (part /\ (HelixContext' part action m))
 useSelector storeId selector = Hooks.wrap hook
   where
-  hook :: Hooks.Hook _ (UseHelix' _) _
+  hook :: Hooks.Hook _ (UseHelix' _ _) _
   hook = Hooks.do
-    _ /\ stateId <- useState Nothing 
+    _ /\ stateId <- useState Nothing
     _ /\ finalizerRef <- useRef (pure unit)
-    { onNextTick } <- useTrigger 
-    let 
+    { onNextTick } <- useTrigger
+    let
       state = unsafePerformEffect $ Store.getState storeId
 
       connect :: Hooks.HookM m (Hooks.HookM m Unit)
@@ -59,25 +58,24 @@ useSelector storeId selector = Hooks.wrap hook
           prevState <- Hooks.get stateId
           when ((selector <$> prevState) /= Just (selector nextState)) do
             Hooks.put stateId (Just nextState)
-            
+
         pure $ Hooks.unsubscribe subscription
 
+    useLifecycleEffect do
+      onNextTick \_ -> do
+        disconnect <- connect
+        liftEffect $ Ref.write disconnect finalizerRef
+        pure unit
 
-  useLifecycleEffect do
-    onNextTick \_ -> do
-      disconnect <- connect
-      liftEffect $ Ref.write disconnect finalizerRef
-      pure unit
+      Hooks.put stateId (Just state)
 
-    Hooks.put stateId (Just state)
+      pure $ Just $ join $ liftEffect $ Ref.read finalizerRef
 
-    pure $ Just $ join $ liftEffect $ Ref.read finalizerRef
-
-  let
-    ctx =
-      { getState: liftEffect $ selector <$> Store.getState storeId
-      , dispatch: lift <<< Store.dispatch storeId
-      }
+    let
+      ctx =
+        { getState: liftEffect $ selector <$> Store.getState storeId
+        , dispatch: lift <<< Store.dispatch storeId
+        }
 
     Hooks.pure $ Tuple (selector state) ctx
 
@@ -86,17 +84,18 @@ useStore
    . MonadEffect m
   => Eq state
   => StoreId state action m
-  -> Hooks.Hook m (UseHelix state) (state /\ (HelixContext' state action m))
+  -> Hooks.Hook m (UseHelix state m) (state /\ (HelixContext' state action m))
 useStore storeId = useSelector storeId identity
 
-foreign import data UseDispatch :: HookType
+foreign import data UseDispatch :: Hooks.HookType
 
 type UseDispatch' = Hooks.Pure
 
-instance HookNewtype UseDispatch UseDispatch' 
+instance HookNewtype UseDispatch UseDispatch'
 
-useDispatch :: forall m state action 
-  . MonadEffect m 
+useDispatch
+  :: forall m state action
+   . MonadEffect m
   => StoreId state action m
   -> Hooks.Hook m UseDispatch (action -> Hooks.HookM m Unit)
 useDispatch storeId = Hooks.wrap $ Hooks.pure (lift <<< Store.dispatch storeId)
