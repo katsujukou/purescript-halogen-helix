@@ -11,4 +11,4 @@ export const window = () => {
  * 
  * @param {import('happy-dom').Window} window 
  */
-export const awaitAsyncCompletePromise = async (window) => window.happyDOM.whenAsyncComplete();
+export const _waitUntilComplete = async (window) => window.happyDOM.waitUntilComplete();

@@ -15,22 +15,25 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Class (class MonadEffect, liftEffect)
+import Effect.Ref as Ref
 import Effect.Unsafe (unsafePerformEffect)
 import Halogen.Helix.Store (StoreId, getInitialState)
 import Halogen.Helix.Store as Store
-import Halogen.Helix.Types (HelixContext, HelixMiddleware, HelixContext')
-import Halogen.Hooks (class HookNewtype, type (<>), HookType, UseEffect, UseState, useLifecycleEffect, useState)
+import Halogen.Helix.Types (HelixMiddleware', HelixContext')
+import Halogen.Hooks (class HookNewtype, type (<>), UseEffect, UseRef, UseState, useLifecycleEffect, useRef, useState)
 import Halogen.Hooks as Hooks
-import Unsafe.Coerce (unsafeCoerce)
+import Halogen.UseTrigger (UseTrigger, useTrigger)
 
-foreign import data UseHelix :: Type -> Hooks.HookType
+foreign import data UseHelix :: Type -> (Type -> Type) -> Hooks.HookType
 
-type UseHelix' :: Type -> Hooks.HookType
-type UseHelix' state = UseState state
-    <> UseEffect 
+type UseHelix' state m =
+  UseState (Maybe state)
+    <> UseRef (Hooks.HookM m Unit)
+    <> UseTrigger m
+    <> UseEffect
     <> Hooks.Pure
 
-instance HookNewtype (UseHelix s) (UseHelix' s)
+instance HookNewtype (UseHelix s m) (UseHelix' s m)
 
 useSelector
   :: forall m state action part
@@ -43,29 +46,40 @@ useSelector storeId selector = Hooks.wrap hook
   where
   hook :: Hooks.Hook _ (UseHelix' _) _
   hook = Hooks.do
-    prev /\ prevId <- useState (unsafePerformEffect $ selector <$> Store.getState storeId)
-    let
+    _ /\ stateId <- useState Nothing 
+    _ /\ finalizerRef <- useRef (pure unit)
+    { onNextTick } <- useTrigger 
+    let 
+      state = unsafePerformEffect $ Store.getState storeId
+
       connect :: Hooks.HookM m (Hooks.HookM m Unit)
       connect = do
         emitter <- liftEffect $ Store.emitState storeId
-        subscription <- Hooks.subscribe $ emitter <#> selector >>> \newState -> do
-          prev' <- Hooks.get prevId
-          when (prev' /= newState) do
-            Hooks.put prevId newState
+        subscription <- Hooks.subscribe $ emitter <#> \nextState -> do
+          prevState <- Hooks.get stateId
+          when ((selector <$> prevState) /= Just (selector nextState)) do
+            Hooks.put stateId (Just nextState)
             
         pure $ Hooks.unsubscribe subscription
 
 
-    useLifecycleEffect do
-      Just <$> connect
+  useLifecycleEffect do
+    onNextTick \_ -> do
+      disconnect <- connect
+      liftEffect $ Ref.write disconnect finalizerRef
+      pure unit
 
-    let 
-      ctx =
-        { getState: liftEffect $ selector <$> Store.getState storeId
-        , dispatch: lift <<< Store.dispatch storeId
-        }
+    Hooks.put stateId (Just state)
 
-    Hooks.pure $ Tuple (unsafePerformEffect $ selector <$> Store.getState storeId) ctx
+    pure $ Just $ join $ liftEffect $ Ref.read finalizerRef
+
+  let
+    ctx =
+      { getState: liftEffect $ selector <$> Store.getState storeId
+      , dispatch: lift <<< Store.dispatch storeId
+      }
+
+    Hooks.pure $ Tuple (selector state) ctx
 
 useStore
   :: forall m state action

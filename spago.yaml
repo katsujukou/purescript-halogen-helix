@@ -11,21 +11,22 @@ package:
   #   strict: true
   dependencies:
     - debug
+    - halogen-use-trigger-hooks: ">=1.0.0 <2.0.0"
     - effect: ">=4.0.0 <5.0.0"
     - halogen-hooks: ">=0.6.3 <1.0.0"
     - halogen-subscriptions: ">=2.0.0 <3.0.0"
     - lazy: ">=6.0.0 <7.0.0"
     - maybe: ">=6.0.0 <7.0.0"
-    - prelude: ">=6.0.1 <7.0.0"
+    - prelude: ">=6.0.2 <7.0.0"
     - refs: ">=6.0.0 <7.0.0"
     - tuples: ">=7.0.0 <8.0.0"
   test:
     main: Test.E2E.Main
     dependencies:
       - aff
-      - aff-promise
       - arrays
       - const
+      - debug
       - effect
       - exceptions
       - foldable-traversable
@@ -34,6 +35,7 @@ package:
       - halogen-hooks
       - halogen-subscriptions
       - halogen-use-trigger-hooks
+      - js-promise-aff
       - lazy
       - lists
       - maybe
@@ -52,8 +54,5 @@ package:
 
 workspace:
   packageSet:
-    registry: 63.9.1
-  extraPackages:
-    halogen-use-trigger-hooks:
-      git: https://github.com/katsujukou/purescript-halogen-use-trigger-hooks.git
-      ref: main
+    registry: 64.0.0
+  extraPackages: {}

@@ -41,8 +41,6 @@ newtype HelixStore s a m = HelixStore
   , listener :: HS.Listener s
   }
 
-getInitialState :: forall s a m. StoreId s a m -> Effect s 
-getInitialState storeId = getSingletonStore storeId <#> \(HelixStore s) -> s.initialState 
 
 getState :: forall m s a. StoreId s a m -> Effect s
 getState storeId = getSingletonStore storeId >>= \(HelixStore { state }) -> Ref.read state

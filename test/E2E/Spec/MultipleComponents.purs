@@ -16,7 +16,7 @@ import Test.E2E.Logger (VirtualConsole, resetLog)
 import Test.Spec (Spec, before, describe, it)
 import Test.Utils.HTML (unsafeQuerySelector, unsafeToHTMLElement, (.>))
 import Test.Utils.HTML as HTML
-import Test.Utils.HappyDOM (awaitAsyncComplete)
+import Test.Utils.HappyDOM (waitUntilComplete)
 import Web.DOM (Element)
 import Web.HTML.HTMLDocument as HTMLDocument
 import Web.HTML.HTMLElement as HTMLElement
@@ -36,9 +36,9 @@ type TestEnv =
       }
   }
 
-setup :: Aff TestEnv
-setup = do
-  { window, console, io } <- Environment.setup app
+setup :: String -> Aff TestEnv
+setup isolator = do
+  { window, console, io } <- Environment.setup (app isolator)
   pn <- liftEffect $ HTMLDocument.toParentNode <$> document window
   elements <- { counterValue: _, incrementBtn: _, switchValue: _, toggleBtn: _, wholeValue: _ }
     <$> unsafeQuerySelector (_counter .> _value) pn
@@ -58,46 +58,49 @@ setup = do
 clickAwait :: forall m. MonadThrow Error m => MonadAff m => Window -> Element -> m Unit
 clickAwait window el = do
   liftEffect <<< HTMLElement.click =<< unsafeToHTMLElement el
-  awaitAsyncComplete window
+  waitUntilComplete window
 
 textContentShouldBe :: forall m a. MonadEffect m => MonadThrow Error m => Show a => Element -> a -> m Unit
 textContentShouldBe el = show >>> (el `HTML.textContentShouldBe` _)
 
 spec :: Spec Unit
-spec = before setup do
-  describe "Multiple components app" do
-    it "should share same state accross multiple components" \{ window, elements, resetStore, io } -> do
-      let click = clickAwait window
+spec = describe "Multiple components app" do
+  before (setup "test 1") do
+    it "should share same state accross multiple components"
+      \{ window, elements, resetStore, io } -> do
+        let click = clickAwait window
 
-      resetStore
+        resetStore
 
-      click elements.incrementBtn
-      elements.counterValue `textContentShouldBe` 1
-      elements.wholeValue `textContentShouldBe` { count: 1, switch: false }
+        click elements.incrementBtn
+        elements.counterValue `textContentShouldBe` 1
+        elements.wholeValue `textContentShouldBe` { count: 1, switch: false }
 
-      click elements.toggleBtn
-      elements.switchValue `HTML.textContentShouldBe` "ON"
-      elements.wholeValue `textContentShouldBe` { count: 1, switch: true }
+        click elements.toggleBtn
+        elements.switchValue `HTML.textContentShouldBe` "ON"
+        elements.wholeValue `textContentShouldBe` { count: 1, switch: true }
 
-      io.dispose :: Aff Unit
+        io.dispose :: Aff Unit
 
-    it "should rerender only when selected part of the store is updated" \{ console, window, elements, io } -> do
-      let click = clickAwait window
+  before (setup "test2") do
+    it "should rerender only when selected part of the store is updated"
+      \{ console, window, elements, io, resetStore } -> do
+        let click = clickAwait window
+        resetStore
+        resetLog console
+        console `logShouldBe` []
+        click elements.incrementBtn
+        -- clicking Increment button should not cause rerendering of toggle switch component
+        console `logShouldBe` logStreamAfterClickingIncrement
 
-      click elements.incrementBtn
-      -- clicking Increment button should not cause rerendering of toggle switch component
-      console `logShouldBe` fold
-        [ logStreamAfterClickingIncrement
-        ]
+        click elements.toggleBtn
+        -- clicking Toggle button should not cause rerendering of counter component
+        console `logShouldBe` fold
+          [ logStreamAfterClickingIncrement
+          , logStreamAfterClickingToggle
+          ]
 
-      click elements.toggleBtn
-      -- clicking Toggle button should not cause rerendering of counter component
-      console `logShouldBe` fold
-        [ logStreamAfterClickingIncrement
-        , logStreamAfterClickingToggle
-        ]
-
-      io.dispose :: Aff Unit
+        io.dispose :: Aff Unit
 
   where
   logStreamAfterClickingIncrement = [ wholeLogMessage, counterLogMessage ]
