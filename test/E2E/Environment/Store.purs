@@ -5,7 +5,8 @@ import Prelude
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Effect.Class (class MonadEffect)
-import Halogen.Helix (UseHelixHook, makeStore')
+import Halogen.Helix (makeStore)
+import Halogen.Helix.Store (StoreId)
 
 type State = { count :: Int, switch :: Boolean }
 
@@ -28,5 +29,5 @@ initialState = { count: 0, switch: false }
 
 -- In order to create dedicated store for each test suit,
 -- useCounterSwitch accepts store id.
-useCounterSwitch :: String -> forall s m. MonadEffect m => Eq s => UseHelixHook State Action s m
-useCounterSwitch id = makeStore' id reducer initialState
+_counterSwitch :: String -> forall m. MonadEffect m => StoreId State Action m
+_counterSwitch id = makeStore id reducer initialState

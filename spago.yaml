@@ -2,14 +2,15 @@ package:
   name: halogen-helix
   description: "Lightweight global state management for PureScript Halogen."
   publish:
-    version: 1.1.0
+    version: 2.0.0
     license: MIT
     location:
       githubOwner: katsujukou
       githubRepo: purescript-halogen-helix
-  build:
-    strict: true
+  # build:
+  #   strict: true
   dependencies:
+    - debug
     - halogen-use-trigger-hooks: ">=1.0.0 <2.0.0"
     - effect: ">=4.0.0 <5.0.0"
     - halogen-hooks: ">=0.6.3 <1.0.0"
@@ -33,6 +34,7 @@ package:
       - halogen
       - halogen-hooks
       - halogen-subscriptions
+      - halogen-use-trigger-hooks
       - js-promise-aff
       - lazy
       - lists

@@ -7,7 +7,8 @@ import Data.Tuple.Nested ((/\))
 import Effect.Class (class MonadEffect)
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.Helix (UseHelixHook, makeStore')
+import Halogen.Helix (makeStore, useSelector, useStore)
+import Halogen.Helix.Store (StoreId)
 import Halogen.Hooks (useLifecycleEffect, useState)
 import Halogen.Hooks as Hooks
 import Type.Proxy (Proxy(..))
@@ -19,8 +20,8 @@ type State =
 
 data Action = SetValue Boolean | Incr
 
-useMyStore :: forall p m. Eq p => MonadEffect m => UseHelixHook State Action p m
-useMyStore = makeStore' "app-store" reducer initialState
+appStore :: forall m. MonadEffect m => StoreId State Action m
+appStore = makeStore "app-store" reducer initialState
   where
   initialState = { value: false, count: 0 }
 
@@ -30,7 +31,7 @@ useMyStore = makeStore' "app-store" reducer initialState
 
 dispatchOnInitialize :: forall q i o m. MonadEffect m => H.Component q i o m
 dispatchOnInitialize = Hooks.component \_ _ -> Hooks.do
-  state@{ value } /\ ctx <- useMyStore identity
+  state@{ value } /\ ctx <- useStore appStore
   useLifecycleEffect do
     ctx.dispatch $ SetValue true
     pure Nothing
@@ -46,7 +47,7 @@ dispatchOnInitialize = Hooks.component \_ _ -> Hooks.do
 
 child :: forall q i o m. MonadEffect m => H.Component q i o m
 child = Hooks.component \_ _ -> Hooks.do
-  { value } /\ _ <- useMyStore (_.value >>> { value: _ })
+  { value } /\ _ <- useSelector appStore (_.value >>> { value: _ })
   Hooks.pure do
     HH.text $ if value then "ON" else "OFF"
 
