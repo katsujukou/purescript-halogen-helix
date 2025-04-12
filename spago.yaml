@@ -52,9 +52,5 @@ package:
 
 workspace:
   packageSet:
-    registry: 63.10.0
-  # extraPackages: {}
-  extraPackages:
-    halogen-use-trigger-hooks: 
-      git: https://github.com/katsujukou/purescript-halogen-use-trigger-hooks
-      ref: v1.0.0
+    registry: 64.0.0
+  extraPackages: {}
